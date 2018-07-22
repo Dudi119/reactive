@@ -1,0 +1,68 @@
+project(reactive CXX)
+cmake_minimum_required(VERSION 3.0)
+
+set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_STANDARD_REQUIRED ON)
+set (CMAKE_COLOR_MAKEFILE ON)
+set (CMAKE_CXX_EXTENSIONS OFF)
+
+if(NOT WIN32)
+    string(ASCII 27 Esc)
+    set(ColourReset "${Esc}[m")
+    set(Red "${Esc}[31m")
+    set(Green "${Esc}[32m")
+else()
+    set(ColourReset "")
+    set(Red "")
+    set(Green "")
+endif()
+
+if (NOT CMAKE_BUILD_TYPE)
+    message(STATUS "Default build type 'Debug'")
+    set(CMAKE_BUILD_TYPE DEBUG CACHE STRING "" FORCE )
+else()
+    string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
+    message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+endif()
+
+option(3RD_PARTY_INSTALL_STEP "3rd party install step" OFF)
+option(COMPILATION_STEP "Compile step" OFF)
+
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+set(PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(PROJECT_3RD_LOC ${CMAKE_CURRENT_SOURCE_DIR}/Third_Party)
+string(FIND "${CMAKE_PREFIX_PATH}" "${PROJEC_3RD_LOC}" 3RD_LOC_PREFIX_ADDED)
+if(NOT ${3RD_LOC_PREFIX_ADDED})
+    list(APPEND CMAKE_PREFIX_PATH ${PROJECT_3RD_LOC})
+endif()
+
+include_directories( ${PROJECT_DIR} ${PROJECT_DIR}/src ${PROJECT_DIR}/Third_Party/include)
+
+#find_package(Core)
+
+if(3RD_PARTY_INSTALL_STEP)
+    #include(installThirdParty)
+endif()
+
+if(COMPILE_STEP)
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+    set(PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_DIR}/bin)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY  ${PROJECT_DIR}/bin)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${PROJECT_DIR}/bin)
+    set(CMAKE_BINARY_DIR ${PROJECT_DIR}/bin)
+    set(EXECUTABLE_OUTPUT_PATH ${PROJECT_DIR}/bin)
+    link_directories(${PROJECT_DIR}/Third_Party/lib)
+
+    if(WIN32)
+    else()
+        set(TO_LINK_LIBS pthread)
+    endif()
+
+    add_library(reactive SHARED src/GraphNode.cpp src/GraphNode.h src/GraphEngine.cpp src/GraphEngine.h src/Event.h)
+    target_link_libraries(reactive ${TO_LINK_LIBS})
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -pedantic")
+endif()
