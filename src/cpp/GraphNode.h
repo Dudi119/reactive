@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include "Event.h"
+#include "GraphEngine.h"
 
 namespace reactive {
     class GraphNode {
@@ -10,12 +11,17 @@ namespace reactive {
         typedef std::shared_ptr<GraphNode> GraphNode_ptr;
 
         void AddConsumer(const GraphNode_ptr &node);
-        template<typename T>
-        void Consume(const T &data)
-        {
+        virtual void Consume(const IEvent::Event_ptr &event) = 0;
 
+    private:
+        template<typename T>
+        void Propegate(const T& data)
+        {
+            for(const GraphNode_ptr& consumer: m_consumers)
+            {
+                GraphEngine::Instance().AddEvent(new Event<T>(consumer, data));
+            }
         }
-        void Propegate(){}
 
     private:
         std::vector<GraphNode_ptr> m_consumers;
