@@ -11,6 +11,9 @@
 *.gch
 *.pch
 
+# Python
+*.cbp
+
 # Compiled Dynamic libraries
 *.so
 *.dylib
@@ -30,3 +33,13 @@
 *.exe
 *.out
 *.app
+
+# other
+**/Third_Party
+**/reactive_py
+**/.idea
+**/CMakeFiles
+Makefile
+cmake_install.cmake
+CMakeCache.txt
+compile_commands.json
