@@ -1,4 +1,3 @@
-#include "sweetPy/CPythonModule.h"
 #include "sweetPy/InitModule.h"
 #include "sweetPy/CPythonClass.h"
 #include "PyNode.h"
