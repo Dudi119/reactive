@@ -44,8 +44,7 @@ if(NOT ${3RD_LOC_PREFIX_ADDED})
     list(APPEND CMAKE_PREFIX_PATH ${PROJECT_3RD_LOC})
 endif()
 message(STATUS "third party installation path - ${PROJECT_3RD_LOC}")
-
-include_directories( ${PROJECT_DIR} ${PROJECT_DIR}/src ${PROJECT_3RD_LOC}/include)
+include_directories( ${PROJECT_DIR} ${PROJECT_DIR}/src ${PROJECT_3RD_LOC}/include ${PYTHON_INCLUDE_DIRS})
 
 find_package(Core)
 find_package(Python)
@@ -84,7 +83,7 @@ if(COMPILE_STEP)
     link_directories(${PROJECT_3RD_LOC}/lib ${OUTPUT_DIR})
     set(TO_LINK_LIBS pthread Core${CMAKE_DEBUG_POSTFIX}.so)
 
-    add_library(reactive SHARED src/cpp/GraphEngine.cpp src/cpp/GraphNode.cpp)
+    add_library(reactive SHARED src/cpp/GraphEngine.cpp src/cpp/GraphNode.cpp src/cpp/GraphNode.h src/cpp/GraphEngine.h)
     target_link_libraries(reactive ${TO_LINK_LIBS})
     add_custom_command(TARGET reactive POST_BUILD
             COMMAND cmake -E copy_directory ${PROJECT_DIR}/src/python ${PYTHON_OUTPUT_DIR})

@@ -1,29 +1,37 @@
 #pragma once
 
+#include <unordered_map>
 #include <vector>
 #include <memory>
+#include "core/Exception.h"
 #include "Event.h"
 #include "GraphEngine.h"
 
 namespace reactive {
-    class GraphNode {
+    class GraphNode
+    {
     public:
         typedef std::shared_ptr<GraphNode> GraphNode_ptr;
 
-        void AddConsumer(const GraphNode_ptr &node);
+        void AddConsumer(int edgeId, const GraphNode_ptr &node);
         virtual void Consume(const IEvent::Event_ptr &event) = 0;
 
     private:
         template<typename T>
-        void Propegate(const T& data)
+        void Propegate(int edgeId, const T& data)
         {
-            for(const GraphNode_ptr& consumer: m_consumers)
+            if(m_consumers.find(edgeId) != m_consumers.end())
             {
-                GraphEngine::Instance().AddEvent(new Event<T>(consumer, data));
+                for(const GraphNode_ptr& consumer: m_consumers[edgeId])
+                {
+                    GraphEngine::Instance().AddEvent(new Event<T>(consumer, data));
+                }
             }
+            else
+                throw core::Exception(__CORE_SOURCE, "No edge which supports edgeId - %d exists", edgeId);
         }
 
     private:
-        std::vector<GraphNode_ptr> m_consumers;
+        std::unordered_map<int, std::vector<GraphNode_ptr>> m_consumers;
     };
 }

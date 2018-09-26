@@ -26,7 +26,7 @@ set(EXECUTABLE_OUTPUT_PATH ${OUTPUT_DIR})
 include_directories(. ..  ${PROJECT_3RD_LOC}/include ${PYTHON_INCLUDE_DIRS})
 link_directories(${PROJECT_3RD_LOC}/lib)
 
-add_library(_pyNode SHARED pyNodeWrapper.cpp)
+add_library(_pyNode SHARED pyNodeWrapper.cpp PyNode.h)
 target_link_libraries(_pyNode sweetPy${CMAKE_DEBUG_POSTFIX}.so libCore${CMAKE_DEBUG_POSTFIX}.so pthread )
 set_target_properties(_pyNode PROPERTIES PREFIX "")
 set_target_properties(_pyNode PROPERTIES DEBUG_POSTFIX "")
