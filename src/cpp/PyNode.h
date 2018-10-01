@@ -1,23 +1,33 @@
 #pragma once
 
-#include "Python.h"
+#include <Python.h>
 #include <vector>
-#include <utility>
+#include <tuple>
 #include <Python.h>
 #include "GraphNode.h"
 
 namespace reactive
 {
-    struct PyFunctionSignature
+    class PyFunctionSignature
     {
     public:
-        enum ParameterType
+        enum ParameterUpdate
         {
             Scalar,
             Edge
         };
 
-        std::vector<std::pair<ParameterType, PyObject*>> Parameters;
+        enum DescriptorOffset
+        {
+            Update,
+            Type,
+            ClosureValue
+        };
+        ~PyFunctionSignature();
+        void AddParameter(ParameterUpdate parameterUpdate, PyObject* parameterType, PyObject* closureValue);
+
+    private:
+        std::vector<std::tuple<ParameterUpdate, PyObject*, PyObject*>> m_parametersDescriptors;
     };
 
     class PyNode : public GraphNode
