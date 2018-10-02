@@ -10,13 +10,16 @@ from wiring import Edge
 @unit
 def unitA():
     return 5
+    x = 5
+    return x
 
 @unit
 def unitB(scalarInt, inputA = Edge[int]):
     pass
 
 def main():
-    unitB(1, unitA())
+    x, y = unitA()
+    unitB(1, x)
 
 if __name__ == "__main__":
     main()
