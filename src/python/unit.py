@@ -1,46 +1,11 @@
 import sys
-import ast
 from os.path import dirname, join
 import inspect
 from wiring import Edge
-from collections import namedtuple, Iterable
-import type_checking
+from unit_parser import FunctionParser
 
 sys.path.append(join(dirname(__file__), '../../bin/'))
 import _pyNode
-
-class ReturnDescriptor:
-    __slots__ = ['name', 'type']
-    returnTuple = namedtuple('ReturnTuple', ['name', 'type'])
-
-    @type_checking.runtime_check
-    def __init__(self, name : str, type):
-        self.name = name
-        self.type = type
-
-class FunctionParser:
-    returnAstValueParser = {ast.Num : lambda node : ReturnDescriptor.returnTuple('', type(node.n)),
-                            ast.Name : lambda node : ReturnDescriptor.returnTuple(node.id, None)}
-    @staticmethod
-    @type_checking.runtime_check
-    def getDescriptor(func : type_checking.Function):
-        astTree = ast.parse(inspect.getsource(func))
-        if len(astTree.body) == 1 and isinstance(astTree.body[0],ast.FunctionDef):
-            funcDefBody = astTree.body[0].body
-        else:
-            raise TypeError('Function ast tree is required')
-
-        return FunctionParser.getReturnDescriptors(funcDefBody)
-
-    @staticmethod
-    def getReturnDescriptors(funcDefBody):
-        returnDescriptors = []
-        for node in funcDefBody:
-            if isinstance(node, ast.Return):
-                returnTuple = FunctionParser.returnAstValueParser[type(node.value)](node.value)
-                returnDescriptors.append(ReturnDescriptor(returnTuple.name, returnTuple.type))
-
-        return returnDescriptors
 
 class UnitOutDescriptor:
     def __init__(self, id : int, name : str, type):
@@ -48,34 +13,57 @@ class UnitOutDescriptor:
         self._name = name
         self._type = type
 
+class UnitOutDescriptorsTuple( tuple ):
+    pass
 
 class UnitDescriptor:
     def __init__(self, func):
-        self._func = func
         self._outDescriptors = []
         id = 0
-        returnDescriptors = FunctionParser.getDescriptor(self._func)
-        for returnDescriptor in returnDescriptors:
+        returnDescriptors = FunctionParser.getDescriptor(func)
+        for returnDescriptor in returnDescriptors.values():
            self._outDescriptors.append(UnitOutDescriptor(id, returnDescriptor.name, returnDescriptor.type))
+           id += 1
+
+        self._func = FunctionParser.transformFunction(func)
 
     def __call__(self, *args, **kwargs):
         funcSig = inspect.signature(self._func)
         #unpack outdescriptors
         normalize_args = []
-        for value, param in zip(args,funcSig.parameters.values()):
-            if type(param.default) == Edge:
-                normalize_args.extend(value) if isinstance(value, Iterable) else normalize_args.append(value)
+        for value in args:
+            if isinstance(value, UnitOutDescriptorsTuple):
+                normalize_args.extend(value)
             else:
                 normalize_args.append(value)
+
+        for key, value in kwargs.items():
+            if isinstance(value, UnitOutDescriptorsTuple):
+                raise ValueError('Multiple edges were provided to a single keyword argument - {0}'.format(key))
 
         sig = _pyNode.PyFunctionSignature()
         for value, param in zip(normalize_args,funcSig.parameters.values()):
             if type(param.default) == Edge:
+                if not isinstance(value, UnitOutDescriptor):
+                    raise ValueError('A non edge was connected to an edge, edge name - {0}'.format(param.name))
                 sig.addParam(_pyNode.pySignature_ParameterUpdate.Edge, param.default.type, None)
             else:
+                if isinstance(value, UnitOutDescriptor):
+                    raise ValueError('An edge was connected to a non edge type, param name - {0}'.format(param.name))
                 sig.addParam(_pyNode.pySignature_ParameterUpdate.Scalar, type(value), value)
 
-        return tuple(self._outDescriptors)
+        for argName, value in kwargs.items():
+            param = funcSig.parameters[argName]
+            if type(param.default) == Edge:
+                if not isinstance(value, UnitOutDescriptor):
+                    raise ValueError('A non edge was connected to an edge, edge name - {0}'.format(param.name))
+                sig.addParam(_pyNode.pySignature_ParameterUpdate.Edge, param.default.type, None)
+            else:
+                if isinstance(value, UnitOutDescriptor):
+                    raise ValueError('An edge was connected to a non edge type, param name - {0}'.format(param.name))
+                sig.addParam(_pyNode.pySignature_ParameterUpdate.Scalar, type(value), value)
+
+        return UnitOutDescriptorsTuple(self._outDescriptors)
 
 def unit(func):
     return UnitDescriptor(func)

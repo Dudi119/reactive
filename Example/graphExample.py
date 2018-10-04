@@ -9,13 +9,14 @@ from wiring import Edge
 
 @unit
 def unitA():
-    return 5
+    __Outputs__(x = int, a = str)
     x = 5
+    print(x)
     return x
 
 @unit
 def unitB(scalarInt, inputA = Edge[int]):
-    pass
+    print(scalarInt)
 
 def main():
     x, y = unitA()
