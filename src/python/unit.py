@@ -7,18 +7,13 @@ from unit_parser import FunctionParser
 sys.path.append(join(dirname(__file__), '../../bin/'))
 import _pyNode
 
-class UnitOutDescriptor:
-    def __init__(self, id : int, name : str, type):
-        self._id = id
-        self._name = name
-        self._type = type
-
 class UnitOutDescriptorsTuple( tuple ):
     pass
 
 class UnitDescriptor:
     def __init__(self, func):
         self._outDescriptors = []
+        self.inScore = 0
         id = 0
         returnDescriptors = FunctionParser.getDescriptor(func)
         for returnDescriptor in returnDescriptors.values():
@@ -28,6 +23,8 @@ class UnitDescriptor:
         self._func = FunctionParser.transformFunction(func)
 
     def __call__(self, *args, **kwargs):
+        GraphEngine().addNode(self)
+
         funcSig = inspect.signature(self._func)
         #unpack outdescriptors
         normalize_args = []
@@ -47,6 +44,7 @@ class UnitDescriptor:
                 if not isinstance(value, UnitOutDescriptor):
                     raise ValueError('A non edge was connected to an edge, edge name - {0}'.format(param.name))
                 sig.addParam(_pyNode.pySignature_ParameterUpdate.Edge, param.default.type, None)
+                value.addConsumer(self)
             else:
                 if isinstance(value, UnitOutDescriptor):
                     raise ValueError('An edge was connected to a non edge type, param name - {0}'.format(param.name))
@@ -58,6 +56,7 @@ class UnitDescriptor:
                 if not isinstance(value, UnitOutDescriptor):
                     raise ValueError('A non edge was connected to an edge, edge name - {0}'.format(param.name))
                 sig.addParam(_pyNode.pySignature_ParameterUpdate.Edge, param.default.type, None)
+                value.addConsumer(self)
             else:
                 if isinstance(value, UnitOutDescriptor):
                     raise ValueError('An edge was connected to a non edge type, param name - {0}'.format(param.name))
@@ -65,5 +64,18 @@ class UnitDescriptor:
 
         return UnitOutDescriptorsTuple(self._outDescriptors)
 
+class UnitOutDescriptor:
+    def __init__(self, id : int, name : str, type):
+        self._id = id
+        self._name = name
+        self._type = type
+        self._consumers = []
+
+    def addConsumer(self, consumer : UnitDescriptor):
+        consumer.inScore += 1
+        self._consumers.append(consumer)
+
 def unit(func):
     return UnitDescriptor(func)
+#due to dependency, wait for unit to complete initialization
+from graph_engine import GraphEngine

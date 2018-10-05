@@ -3,7 +3,6 @@ from collections import OrderedDict
 from collections import namedtuple
 import inspect
 import types
-from itertools import dropwhile
 import type_checking
 
 class ReturnDescriptor:
@@ -20,7 +19,7 @@ def func(x, y):                     def func(x, y):
 '''
 class FunctionTransformer( ast.NodeTransformer ):
     def visit_Expr(self, node):
-        if isinstance(node.value, ast.Call) and node.value.func.id == '__Outputs__':
+        if isinstance(node.value, ast.Call) and isinstance(node.value.func, ast.Name) and node.value.func.id == '__Outputs__':
             return ast.copy_location(ast.Pass(), node)
         else:
             return node
@@ -42,7 +41,7 @@ class FunctionParser:
                     pass
                 else:
                     returnDescriptors[returnTuple.name] = ReturnDescriptor(returnTuple.name, returnTuple.type)
-            if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
+            if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call) and isinstance(node.value.func, ast.Name):
                 exprFunc = node.value.func
                 if exprFunc.id == '__Outputs__':
                     for arg in node.value.keywords:
