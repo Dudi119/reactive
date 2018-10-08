@@ -6,8 +6,8 @@
 namespace reactive{
     INIT_MODULE(_pyNode, "reactive pyNode")
     {
-        sweetPy::CPythonClass<PyNode> pyNode(module, "PyNode", "A py node unit capable of running python logic from with in the graph.");
-        pyNode.AddConstructor<PyObject *, const PyFunctionSignature &>();
+        sweetPy::CPythonClass<PyNodeFactory> pyNodeFactory(module, "PyNodeFactory", "A py node unit factory.");
+        pyNodeFactory.AddStaticMethod("create", "Creates PyNode instance", &PyNodeFactory::Create);
 
         sweetPy::CPythonClass<PyFunctionSignature> pySignature(module, "PyFunctionSignature", "Function signature descriptor");
         pySignature.AddMethod("addParam", "Add a new description for a specific param", &PyFunctionSignature::AddParameter);

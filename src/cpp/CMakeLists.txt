@@ -24,9 +24,19 @@ set(CMAKE_BINARY_DIR ${OUTPUT_DIR})
 set(EXECUTABLE_OUTPUT_PATH ${OUTPUT_DIR})
 
 include_directories(. ..  ${PROJECT_3RD_LOC}/include ${PYTHON_INCLUDE_DIRS})
-link_directories(${PROJECT_3RD_LOC}/lib)
+link_directories(${PROJECT_3RD_LOC}/lib ../../bin)
 
-add_library(_pyNode SHARED pyNodeWrapper.cpp PyNode.h PyNode.cpp)
-target_link_libraries(_pyNode sweetPy${CMAKE_DEBUG_POSTFIX}.so libCore${CMAKE_DEBUG_POSTFIX}.so pthread )
+add_library(_pyNode SHARED pyNodeWrapper.cpp)
+target_link_libraries(_pyNode reactive${CMAKE_DEBUG_POSTFIX}.so sweetPy${CMAKE_DEBUG_POSTFIX}.so libCore${CMAKE_DEBUG_POSTFIX}.so pthread )
 set_target_properties(_pyNode PROPERTIES PREFIX "")
 set_target_properties(_pyNode PROPERTIES DEBUG_POSTFIX "")
+
+add_library(_engine SHARED engineWrapper.cpp)
+target_link_libraries(_engine reactive${CMAKE_DEBUG_POSTFIX}.so sweetPy${CMAKE_DEBUG_POSTFIX}.so libCore${CMAKE_DEBUG_POSTFIX}.so pthread )
+set_target_properties(_engine PROPERTIES PREFIX "")
+set_target_properties(_engine PROPERTIES DEBUG_POSTFIX "")
+
+add_library(_core SHARED coreWrapper.cpp)
+target_link_libraries(_core sweetPy${CMAKE_DEBUG_POSTFIX}.so libCore${CMAKE_DEBUG_POSTFIX}.so pthread )
+set_target_properties(_core PROPERTIES PREFIX "")
+set_target_properties(_core PROPERTIES DEBUG_POSTFIX "")

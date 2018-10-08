@@ -1,4 +1,6 @@
 #include "PyNode.h"
+#include <memory>
+#include "GraphEngine.h"
 
 namespace reactive{
     PyFunctionSignature::~PyFunctionSignature()
@@ -14,5 +16,26 @@ namespace reactive{
         Py_XINCREF(parameterType);
         Py_XINCREF(closureValue);
         m_parametersDescriptors.emplace_back(std::make_tuple(parameterUpdate, parameterType, closureValue));
+    }
+
+    PyNode::PyNode(sweetPy::object_ptr &&pyFunction, const PyFunctionSignature &signature)
+        :m_pyFunction(std::move(pyFunction))
+    {
+    }
+
+    PyNode::~PyNode() {}
+
+    void PyNode::Stop()
+    {
+        m_pyFunction.reset();
+    }
+
+    GraphNode& PyNodeFactory::Create(PyObject *pyFunction, const PyFunctionSignature &signature)
+    {
+        Py_XINCREF(pyFunction);
+        std::unique_ptr<GraphNode> node(new PyNode(sweetPy::object_ptr(pyFunction, &sweetPy::Deleter::Owner), signature));
+        GraphNode& nodeRef = *node;
+        GraphEngine::Instance().RegisterNode(std::move(node));
+        return nodeRef;
     }
 }

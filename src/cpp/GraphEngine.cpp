@@ -1,4 +1,5 @@
 #include "GraphEngine.h"
+#include "GraphNode.h"
 
 namespace reactive
 {
@@ -22,8 +23,19 @@ namespace reactive
         }
     }
 
+    void GraphEngine::RegisterNode(std::unique_ptr<GraphNode> &&node)
+    {
+        m_nodes.emplace_back(node.release());
+    }
+
     void GraphEngine::AddEvent(const IEvent::Event_ptr &event)
     {
         m_nextCycleEvents->push_back(event);
+    }
+
+    void GraphEngine::Stop()
+    {
+        for(auto& node : m_nodes)
+           node->Stop();
     }
 }

@@ -13,8 +13,10 @@ namespace reactive {
     public:
         typedef std::shared_ptr<GraphNode> GraphNode_ptr;
 
+        virtual ~GraphNode();
+        virtual void Stop() = 0;
         void AddConsumer(int edgeId, const GraphNode_ptr &node);
-        virtual void Consume(const IEvent::Event_ptr &event) = 0;
+        //virtual void Consume(const IEvent::Event_ptr &event) = 0;
 
     private:
         template<typename T>

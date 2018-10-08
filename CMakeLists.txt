@@ -54,7 +54,7 @@ if(3RD_PARTY_INSTALL_STEP)
     include(installThirdParty)
 endif()
 
-if(COMPILE_STEP)
+#if(COMPILE_STEP)
     set(PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
     if(NOT OUTPUT_DIR)
         set(OUTPUT_DIR ${PROJECT_DIR}/bin)
@@ -83,11 +83,11 @@ if(COMPILE_STEP)
     link_directories(${PROJECT_3RD_LOC}/lib ${OUTPUT_DIR})
     set(TO_LINK_LIBS pthread Core${CMAKE_DEBUG_POSTFIX}.so)
 
-    add_library(reactive SHARED src/cpp/GraphEngine.cpp src/cpp/GraphNode.cpp src/cpp/GraphNode.h src/cpp/GraphEngine.h)
+    add_library(reactive SHARED src/cpp/GraphNode.cpp src/cpp/GraphNode.h src/cpp/GraphEngine.cpp src/cpp/PyNode.cpp)
     target_link_libraries(reactive ${TO_LINK_LIBS})
     add_custom_command(TARGET reactive POST_BUILD
             COMMAND cmake -E copy_directory ${PROJECT_DIR}/src/python ${PYTHON_OUTPUT_DIR})
-endif()
+#endif()
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -pedantic -Wno-sign-compare -Wno-unused-variable")

@@ -38,42 +38,67 @@ class UnitDescriptor:
             if isinstance(value, UnitOutDescriptorsTuple):
                 raise ValueError('Multiple edges were provided to a single keyword argument - {0}'.format(key))
 
-        sig = _pyNode.PyFunctionSignature()
+        self._sig = _pyNode.PyFunctionSignature()
         for value, param in zip(normalize_args,funcSig.parameters.values()):
             if type(param.default) == Edge:
                 if not isinstance(value, UnitOutDescriptor):
                     raise ValueError('A non edge was connected to an edge, edge name - {0}'.format(param.name))
-                sig.addParam(_pyNode.pySignature_ParameterUpdate.Edge, param.default.type, None)
                 value.addConsumer(self)
+                value.type = param.default.type
+                self._sig.addParam(_pyNode.pySignature_ParameterUpdate.Edge, value.type, None)
             else:
                 if isinstance(value, UnitOutDescriptor):
                     raise ValueError('An edge was connected to a non edge type, param name - {0}'.format(param.name))
-                sig.addParam(_pyNode.pySignature_ParameterUpdate.Scalar, type(value), value)
+                self._sig.addParam(_pyNode.pySignature_ParameterUpdate.Scalar, type(value), value)
 
         for argName, value in kwargs.items():
             param = funcSig.parameters[argName]
             if type(param.default) == Edge:
                 if not isinstance(value, UnitOutDescriptor):
                     raise ValueError('A non edge was connected to an edge, edge name - {0}'.format(param.name))
-                sig.addParam(_pyNode.pySignature_ParameterUpdate.Edge, param.default.type, None)
                 value.addConsumer(self)
+                value.type = param.default.type
+                self._sig.addParam(_pyNode.pySignature_ParameterUpdate.Edge, value.type, None)
             else:
                 if isinstance(value, UnitOutDescriptor):
                     raise ValueError('An edge was connected to a non edge type, param name - {0}'.format(param.name))
-                sig.addParam(_pyNode.pySignature_ParameterUpdate.Scalar, type(value), value)
+                self._sig.addParam(_pyNode.pySignature_ParameterUpdate.Scalar, type(value), value)
 
         return UnitOutDescriptorsTuple(self._outDescriptors)
 
+    @property
+    def outDescriptors(self):
+        return self._outDescriptors
+
+    def create(self):
+        return _pyNode.PyNodeFactory.create(self._func, self._sig)
+
 class UnitOutDescriptor:
+
     def __init__(self, id : int, name : str, type):
         self._id = id
         self._name = name
         self._type = type
         self._consumers = []
 
+    def setType(self, type):
+        if self._type == None:
+            self._type = type
+        elif self._type != type:
+            raise ValueError('Inconsistency with edge data type, new declared type - {0}, original - {1}'.format(type, self._type))
+
+    def getType(self):
+        return self._type
+
     def addConsumer(self, consumer : UnitDescriptor):
         consumer.inScore += 1
         self._consumers.append(consumer)
+
+    @property
+    def consumers(self):
+        return self._consumers
+
+    type = property(getType, setType)
 
 def unit(func):
     return UnitDescriptor(func)

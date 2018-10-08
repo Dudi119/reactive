@@ -4,6 +4,7 @@
 #include <vector>
 #include <tuple>
 #include <Python.h>
+#include "sweetPy/Core/Deleter.h"
 #include "GraphNode.h"
 
 namespace reactive
@@ -32,6 +33,19 @@ namespace reactive
 
     class PyNode : public GraphNode
     {
-        PyNode(PyObject* functionObject, const PyFunctionSignature& signature){}
+    public:
+        PyNode(sweetPy::object_ptr&& pyFunction, const PyFunctionSignature& signature);
+        virtual ~PyNode();
+
+        void Stop() override;
+
+    private:
+        sweetPy::object_ptr m_pyFunction;
+    };
+
+    class PyNodeFactory
+    {
+    public:
+        static GraphNode& Create(PyObject* pyFunction, const PyFunctionSignature& signature);
     };
 }
