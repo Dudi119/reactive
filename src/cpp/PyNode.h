@@ -5,7 +5,7 @@
 #include <tuple>
 #include <Python.h>
 #include "sweetPy/Core/Deleter.h"
-#include "GraphNode.h"
+#include "UnitNode.h"
 
 namespace reactive
 {
@@ -22,16 +22,20 @@ namespace reactive
         {
             Update,
             Type,
-            ClosureValue
+            Value
         };
+
+        typedef std::vector<std::tuple<ParameterUpdate, PyObject*, PyObject*>> Params;
+
         ~PyFunctionSignature();
-        void AddParameter(ParameterUpdate parameterUpdate, PyObject* parameterType, PyObject* closureValue);
+        const Params& GetParams() const;
+        void AddParameter(ParameterUpdate parameterUpdate, PyObject* parameterType, PyObject* value);
 
     private:
-        std::vector<std::tuple<ParameterUpdate, PyObject*, PyObject*>> m_parametersDescriptors;
+        Params m_parametersDescriptors;
     };
 
-    class PyNode : public GraphNode
+    class PyNode : public UnitNode
     {
     public:
         PyNode(sweetPy::object_ptr&& pyFunction, const PyFunctionSignature& signature);
@@ -46,6 +50,6 @@ namespace reactive
     class PyNodeFactory
     {
     public:
-        static GraphNode& Create(PyObject* pyFunction, const PyFunctionSignature& signature);
+        static UnitNode& Create(PyObject* pyFunction, const PyFunctionSignature& signature);
     };
 }

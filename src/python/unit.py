@@ -45,7 +45,7 @@ class UnitDescriptor:
                     raise ValueError('A non edge was connected to an edge, edge name - {0}'.format(param.name))
                 value.addConsumer(self)
                 value.type = param.default.type
-                self._sig.addParam(_pyNode.pySignature_ParameterUpdate.Edge, value.type, None)
+                self._sig.addParam(_pyNode.pySignature_ParameterUpdate.Edge, value.type, value.id)
             else:
                 if isinstance(value, UnitOutDescriptor):
                     raise ValueError('An edge was connected to a non edge type, param name - {0}'.format(param.name))
@@ -58,7 +58,7 @@ class UnitDescriptor:
                     raise ValueError('A non edge was connected to an edge, edge name - {0}'.format(param.name))
                 value.addConsumer(self)
                 value.type = param.default.type
-                self._sig.addParam(_pyNode.pySignature_ParameterUpdate.Edge, value.type, None)
+                self._sig.addParam(_pyNode.pySignature_ParameterUpdate.Edge, value.type, value.id)
             else:
                 if isinstance(value, UnitOutDescriptor):
                     raise ValueError('An edge was connected to a non edge type, param name - {0}'.format(param.name))
@@ -93,6 +93,10 @@ class UnitOutDescriptor:
     def addConsumer(self, consumer : UnitDescriptor):
         consumer.inScore += 1
         self._consumers.append(consumer)
+
+    @property
+    def id(self):
+        return self._id
 
     @property
     def consumers(self):

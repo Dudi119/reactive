@@ -1,5 +1,5 @@
 #include "GraphEngine.h"
-#include "GraphNode.h"
+#include "UnitNode.h"
 
 namespace reactive
 {
@@ -28,7 +28,7 @@ namespace reactive
         m_nodes.emplace_back(node.release());
     }
 
-    void GraphEngine::AddEvent(const IEvent::Event_ptr &event)
+    void GraphEngine::AddEvent(const Event::Event_ptr &event)
     {
         m_nextCycleEvents->push_back(event);
     }

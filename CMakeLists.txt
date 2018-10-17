@@ -80,10 +80,12 @@ endif()
 
     add_subdirectory(${PROJECT_DIR}/src)
 
+    include_directories(. ..  ${PROJECT_3RD_LOC}/include ${PYTHON_INCLUDE_DIRS})
+
     link_directories(${PROJECT_3RD_LOC}/lib ${OUTPUT_DIR})
     set(TO_LINK_LIBS pthread Core${CMAKE_DEBUG_POSTFIX}.so)
 
-    add_library(reactive SHARED src/cpp/GraphNode.cpp src/cpp/GraphNode.h src/cpp/GraphEngine.cpp src/cpp/PyNode.cpp)
+    add_library(reactive SHARED src/cpp/UnitNode.cpp src/cpp/UnitNode.h src/cpp/GraphEngine.cpp src/cpp/PyNode.cpp src/cpp/InputAdapter.h src/cpp/InputAdapter.cpp src/cpp/ConstNode.h src/cpp/ConstNode.cpp src/cpp/Event.cpp src/cpp/GraphNode.h)
     target_link_libraries(reactive ${TO_LINK_LIBS})
     add_custom_command(TARGET reactive POST_BUILD
             COMMAND cmake -E copy_directory ${PROJECT_DIR}/src/python ${PYTHON_OUTPUT_DIR})

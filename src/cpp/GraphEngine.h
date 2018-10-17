@@ -12,11 +12,11 @@ namespace reactive
     class GraphEngine
     {
     public:
-        typedef std::vector<IEvent::Event_ptr> NextCycleQueue;
+        typedef std::vector<Event::Event_ptr> NextCycleQueue;
 
         static GraphEngine& Instance();
         void RegisterNode(std::unique_ptr<GraphNode>&& node);
-        void AddEvent(const IEvent::Event_ptr& event);
+        void AddEvent(const Event::Event_ptr& event);
         void InitiateEventQueue();
         void Stop();
 

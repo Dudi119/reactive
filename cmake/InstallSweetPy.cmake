@@ -17,6 +17,11 @@ if (NOT SweetPy_FOUND AND Core_FOUND)
             DEPENDEES   install
             )
 
+    ExternalProject_Add_Step(SweetPy SweetPy_Install_Types_Headers
+            COMMAND     mkdir -p <INSTALL_DIR>/include/sweetPy/Types && sh -c "cp <SOURCE_DIR>/src/Types/*.h <INSTALL_DIR>/include/sweetPy/Types"
+            DEPENDEES   install
+            )
+
     if (NOT Core_FOUND)
         add_dependencies(SweetPy Core_stub)
     endif()

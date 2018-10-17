@@ -2,12 +2,17 @@
 #include "sweetPy/CPythonClass.h"
 #include "sweetPy/CPythonEnum.h"
 #include "PyNode.h"
+#include "UnitNode.h"
+#include "InputAdapter.h"
 
 namespace reactive{
     INIT_MODULE(_pyNode, "reactive pyNode")
     {
         sweetPy::CPythonClass<PyNodeFactory> pyNodeFactory(module, "PyNodeFactory", "A py node unit factory.");
         pyNodeFactory.AddStaticMethod("create", "Creates PyNode instance", &PyNodeFactory::Create);
+
+        sweetPy::CPythonClass<UnitNode> graphNode(module, "UnitNode", "A basic representation for graph node");
+        graphNode.AddMethod("addConsumer", "will wire a consumer", &UnitNode::AddConsumer);
 
         sweetPy::CPythonClass<PyFunctionSignature> pySignature(module, "PyFunctionSignature", "Function signature descriptor");
         pySignature.AddMethod("addParam", "Add a new description for a specific param", &PyFunctionSignature::AddParameter);

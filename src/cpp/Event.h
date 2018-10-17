@@ -4,27 +4,29 @@
 
 namespace reactive
 {
-    class GraphNode;
+    class UnitNode;
 
-    class IEvent
+    class Event
     {
     public:
-        typedef std::shared_ptr<IEvent> Event_ptr;
-        virtual ~IEvent(){}
+        typedef std::shared_ptr<Event> Event_ptr;
+        Event(UnitNode& consumer);
+        virtual ~Event();
+        const UnitNode& GetConsumer() const{ return m_consumer; }
+
+    private:
+        UnitNode& m_consumer;
     };
 
     template<typename T>
-    class Event : public IEvent
+    class TypedEvent : public Event
     {
     public:
-        Event(const std::shared_ptr<GraphNode> &consumer, T &&data)
-                :m_consumer(consumer), m_data(std::move(data)) {}
-        virtual ~Event(){}
-        std::shared_ptr<GraphNode>& GetConsumer() const{ return m_consumer; }
+        TypedEvent(UnitNode& consumer, T &&data);
+        virtual ~TypedEvent();
         T& GetData() const { return m_data; }
 
     private:
-        std::shared_ptr<GraphNode> m_consumer;
         T m_data;
     };
 }
