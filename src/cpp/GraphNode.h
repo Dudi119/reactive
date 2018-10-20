@@ -9,7 +9,7 @@ namespace reactive{
         virtual void PreEngineStart() = 0;
         virtual void PostEngineStart() = 0;
         virtual void PostEngineStep() = 0;
-        virtual void Stop() = 0;
+        virtual void PostStop() = 0;
     };
 
 }

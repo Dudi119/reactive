@@ -16,5 +16,5 @@ namespace reactive
     void UnitNode::PreEngineStart(){}
     void UnitNode::PostEngineStart(){}
     void UnitNode::PostEngineStep(){}
-    void UnitNode::Stop(){}
+    void UnitNode::PostStop(){}
 }

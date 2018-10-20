@@ -42,9 +42,11 @@ namespace reactive{
 
     PyNode::~PyNode() {}
 
-    void PyNode::Stop()
+    void PyNode::PostStop()
     {
+        auto handle = PyGILState_Ensure();
         m_pyFunction.reset();
+        PyGILState_Release(handle);
     }
 
     UnitNode& PyNodeFactory::Create(PyObject *pyFunction, const PyFunctionSignature &signature)

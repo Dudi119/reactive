@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <chrono>
 
 namespace reactive
 {
@@ -9,7 +10,8 @@ namespace reactive
     class Event
     {
     public:
-        typedef std::shared_ptr<Event> Event_ptr;
+        typedef std::chrono::system_clock::time_point TimePoint;
+
         Event(UnitNode& consumer);
         virtual ~Event();
         const UnitNode& GetConsumer() const{ return m_consumer; }

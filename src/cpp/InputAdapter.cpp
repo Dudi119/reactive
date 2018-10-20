@@ -7,7 +7,7 @@ namespace reactive{
     void InputAdapter::PreEngineStart(){}
     void InputAdapter::PostEngineStart(){}
     void InputAdapter::PostEngineStep(){}
-    void InputAdapter::Stop(){}
+    void InputAdapter::PostStop(){}
 
     void InputAdapter::AddConsumer(UnitNode &consumer)
     {

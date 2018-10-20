@@ -41,7 +41,7 @@ namespace reactive
         PyNode(sweetPy::object_ptr&& pyFunction, const PyFunctionSignature& signature);
         virtual ~PyNode();
 
-        void Stop() override;
+        void PostStop() override;
 
     private:
         sweetPy::object_ptr m_pyFunction;

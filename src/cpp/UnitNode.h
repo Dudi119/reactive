@@ -19,7 +19,7 @@ namespace reactive {
         void PreEngineStart() override;
         void PostEngineStart() override;
         void PostEngineStep() override;
-        void Stop() override;
+        void PostStop() override;
         //virtual void Consume(const IEvent::Event_ptr &event) = 0;
 
     private:
