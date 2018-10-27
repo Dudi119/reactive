@@ -16,9 +16,9 @@ namespace reactive {
     public:
         virtual ~UnitNode();
         void AddConsumer(int edgeId, UnitNode& consumer);
-        void PreEngineStart() override;
-        void PostEngineStart() override;
-        void PostEngineStep() override;
+        void PreStart() override;
+        void PostStart() override;
+        void PostStep() override;
         void PostStop() override;
         //virtual void Consume(const IEvent::Event_ptr &event) = 0;
 

@@ -6,9 +6,9 @@ namespace reactive{
     {
     public:
         virtual ~GraphNode(){}
-        virtual void PreEngineStart() = 0;
-        virtual void PostEngineStart() = 0;
-        virtual void PostEngineStep() = 0;
+        virtual void PreStart() = 0;
+        virtual void PostStart() = 0;
+        virtual void PostStep() = 0;
         virtual void PostStop() = 0;
     };
 

@@ -10,5 +10,6 @@ namespace reactive{
         sweetPy::CPythonClass<GraphEngine> engine(module, "GraphEngine", "The graph engine");
         engine.AddStaticMethod("instance", "Provides access to the GraphEngine instance", &GraphEngine::Instance);
         engine.AddMethod("stop", "stops the engine", &GraphEngine::Stop);
+        engine.AddMethod("start", "initiates the engine run", &GraphEngine::Start);
     }
 }

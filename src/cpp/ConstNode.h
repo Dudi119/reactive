@@ -11,6 +11,7 @@ class ConstNode : public InputAdapter
 public:
     ConstNode(sweetPy::object_ptr&& value, const sweetPy::TimeDelta& delta);
     virtual ~ConstNode();
+    void PostStart() override;
 
 private:
     sweetPy::object_ptr m_value;

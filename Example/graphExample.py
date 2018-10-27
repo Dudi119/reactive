@@ -3,6 +3,7 @@ from os.path import dirname, join
 
 sys.path.append(join(dirname(__file__), '../bin/'))
 sys.path.append(join(dirname(__file__), '../src/python/'))
+from datetime import datetime
 from unit import unit
 from wiring import Edge, __Output__
 from graph import sub_graph, graph
@@ -42,6 +43,6 @@ if __name__ == "__main__":
     with Logger():
         _core.Environment.instance().init()
         main()
-        GraphEngine.instance().stop()
+        GraphEngine.instance().start(datetime(2018, 1, 1, second=3))
 
 

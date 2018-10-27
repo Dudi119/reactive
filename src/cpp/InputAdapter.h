@@ -12,9 +12,9 @@ namespace reactive{
     {
     public:
         virtual ~InputAdapter();
-        void PreEngineStart() override;
-        void PostEngineStart() override;
-        void PostEngineStep() override;
+        void PreStart() override;
+        void PostStart() override;
+        void PostStep() override;
         void PostStop() override;
         void AddConsumer(UnitNode& consumer);
 

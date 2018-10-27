@@ -1,5 +1,6 @@
 #include "GraphEngine.h"
-#include <Python.h>
+#include <thread>
+#include "sweetPy/Core/Lock.h"
 #include "UnitNode.h"
 
 namespace reactive
@@ -13,10 +14,14 @@ namespace reactive
         return instance;
     }
 
+    GraphEngine::~GraphEngine()
+    {
+        Stop();
+    }
+
     GraphEngine::GraphEngine(): m_cycleDuration(2)
     {
         m_eventLoopThread.reset(new core::Thread("GraphEngine Event loop thread", std::bind(&GraphEngine::EventLoop, this)));
-        m_eventLoopThread->Start();
     }
 
     void GraphEngine::InitiateEventQueue()
@@ -48,30 +53,61 @@ namespace reactive
 
     void GraphEngine::Stop()
     {
-        Py_BEGIN_ALLOW_THREADS
+        if(m_isStopped == true)
+            return;
+        sweetPy::Yield yield;
         {
             std::unique_lock<std::mutex> guard(m_eventLoopMutex);
+            if(m_isStopped == true)
+                return;
             m_isStopped = true;
             m_eventLoopConv.notify_one();
         }
         m_eventLoopThread->Join();
-        Py_END_ALLOW_THREADS
+    }
+
+    void GraphEngine::ConsumeTimedEvents(const Event::TimePoint& upperTimePoint, Consumers& consumers)
+    {
+        while( m_timedEvents.empty() == false && m_timedEvents.begin()->first < upperTimePoint )
+        {
+            auto it = m_timedEvents.begin();
+            consumers.emplace_back(it->second->GetConsumer());
+            delete it->second;
+            m_timedEvents.erase(it);
+        }
+    }
+
+    void GraphEngine::Start(const sweetPy::DateTime& endTime)
+    {
+        sweetPy::Yield yield;
+        m_eventLoopThread->Start();
+        std::this_thread::sleep_for(endTime.GetDuration());
+        Stop();
     }
 
     void GraphEngine::EventLoop()
     {
+        PostStart();
         typedef std::chrono::milliseconds Milliseconds;
         {
             std::unique_lock<std::mutex> guard(m_eventLoopMutex);
             while(m_isStopped == false)
             {
                 auto cycleStartingTime = std::chrono::system_clock::now();
+                Consumers consumers;
+                ConsumeTimedEvents(cycleStartingTime + m_cycleDuration, consumers);
                 Milliseconds currentCycleDuration = std::chrono::duration_cast<Milliseconds>(std::chrono::system_clock::now() - cycleStartingTime);
-                Milliseconds waitingTime = currentCycleDuration > m_cycleDuration ? m_cycleDuration : m_cycleDuration - currentCycleDuration;
+                Milliseconds waitingTime = currentCycleDuration > m_cycleDuration ? Milliseconds(0) : m_cycleDuration - currentCycleDuration;
                 m_eventLoopConv.wait_until(guard, std::chrono::system_clock::now() + waitingTime, [this]{return m_isStopped;});
             }
         }
         PostStop();
+    }
+
+    void GraphEngine::PostStart()
+    {
+        for(auto& node : m_nodes)
+            node->PostStart();
     }
 
     void GraphEngine::PostStop()

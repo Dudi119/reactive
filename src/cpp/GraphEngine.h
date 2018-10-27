@@ -6,6 +6,7 @@
 #include <mutex>
 #include <chrono>
 #include "core/Thread.h"
+#include "sweetPy/Types/DateTime.h"
 #include "Event.h"
 
 namespace reactive
@@ -16,18 +17,23 @@ namespace reactive
     {
     public:
         typedef std::vector<Event*> NextCycleQueue;
+        typedef std::vector<std::reference_wrapper<GraphNode>> Consumers;
 
         static GraphEngine& Instance();
+        ~GraphEngine();
         void RegisterNode(std::unique_ptr<GraphNode>&& node);
         void AddTimedEvent(const Event::TimePoint& timePoint, Event* event);
         void AddEvent(Event* event);
         void Stop();
+        void Start(const sweetPy::DateTime& endTime);
 
     private:
         void InitiateEventQueue();
         GraphEngine();
         void EventLoop();
+        void PostStart();
         void PostStop();
+        void ConsumeTimedEvents(const Event::TimePoint& upperTimePoint, Consumers& consumers);
 
     private:
         thread_local static std::mutex m_eventQueueMutex;

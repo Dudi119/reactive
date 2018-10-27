@@ -13,8 +13,8 @@ namespace reactive
         m_inputAdapters[inputId]->AddConsumer(consumer);
     }
 
-    void UnitNode::PreEngineStart(){}
-    void UnitNode::PostEngineStart(){}
-    void UnitNode::PostEngineStep(){}
+    void UnitNode::PreStart(){}
+    void UnitNode::PostStart(){}
+    void UnitNode::PostStep(){}
     void UnitNode::PostStop(){}
 }

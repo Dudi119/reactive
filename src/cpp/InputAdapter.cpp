@@ -4,9 +4,9 @@ namespace reactive{
 
     InputAdapter::~InputAdapter() {}
 
-    void InputAdapter::PreEngineStart(){}
-    void InputAdapter::PostEngineStart(){}
-    void InputAdapter::PostEngineStep(){}
+    void InputAdapter::PreStart(){}
+    void InputAdapter::PostStart(){}
+    void InputAdapter::PostStep(){}
     void InputAdapter::PostStop(){}
 
     void InputAdapter::AddConsumer(UnitNode &consumer)
