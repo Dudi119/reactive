@@ -2,6 +2,7 @@
 #include <thread>
 #include "sweetPy/Core/Lock.h"
 #include "UnitNode.h"
+#include "InputAdapter.h"
 
 namespace reactive
 {
@@ -19,7 +20,7 @@ namespace reactive
         Stop();
     }
 
-    GraphEngine::GraphEngine(): m_cycleDuration(2)
+    GraphEngine::GraphEngine(): m_cycleDuration(2), m_isStarted(false)
     {
         m_eventLoopThread.reset(new core::Thread("GraphEngine Event loop thread", std::bind(&GraphEngine::EventLoop, this)));
     }
@@ -46,6 +47,15 @@ namespace reactive
         m_nextCycleEvents->push_back(event);
     }
 
+    void GraphEngine::AddNodeToCycle(GraphNode &node)
+    {
+        if(node.IsTicked() == false) //Making sure we only going to add each node once.
+        {
+            m_currentCycleNodes.emplace_front(node);
+            node.SetTicked();
+        }
+    }
+
     void GraphEngine::AddTimedEvent(const Event::TimePoint &timePoint, Event *event)
     {
         m_timedEvents.insert(std::make_pair(timePoint, event));
@@ -53,7 +63,7 @@ namespace reactive
 
     void GraphEngine::Stop()
     {
-        if(m_isStopped == true)
+        if(m_isStopped == true || m_isStarted == false)
             return;
         sweetPy::Yield yield;
         {
@@ -66,13 +76,13 @@ namespace reactive
         m_eventLoopThread->Join();
     }
 
-    void GraphEngine::ConsumeTimedEvents(const Event::TimePoint& upperTimePoint, Consumers& consumers)
+    void GraphEngine::ConsumeTimedEvents(const Event::TimePoint& upperTimePoint)
     {
         while( m_timedEvents.empty() == false && m_timedEvents.begin()->first < upperTimePoint )
         {
             auto it = m_timedEvents.begin();
-            consumers.emplace_back(it->second->GetConsumer());
-            delete it->second;
+            InputAdapter& inputAdapter = static_cast<InputAdapter&>(it->second->GetConsumer());
+            inputAdapter.ConsumeEvent(std::unique_ptr<Event>(it->second));
             m_timedEvents.erase(it);
         }
     }
@@ -81,6 +91,7 @@ namespace reactive
     {
         sweetPy::Yield yield;
         m_eventLoopThread->Start();
+        m_isStarted = true;
         std::this_thread::sleep_for(endTime.GetDuration());
         Stop();
     }
@@ -94,8 +105,7 @@ namespace reactive
             while(m_isStopped == false)
             {
                 auto cycleStartingTime = std::chrono::system_clock::now();
-                Consumers consumers;
-                ConsumeTimedEvents(cycleStartingTime + m_cycleDuration, consumers);
+                ConsumeTimedEvents(cycleStartingTime + m_cycleDuration);
                 Milliseconds currentCycleDuration = std::chrono::duration_cast<Milliseconds>(std::chrono::system_clock::now() - cycleStartingTime);
                 Milliseconds waitingTime = currentCycleDuration > m_cycleDuration ? Milliseconds(0) : m_cycleDuration - currentCycleDuration;
                 m_eventLoopConv.wait_until(guard, std::chrono::system_clock::now() + waitingTime, [this]{return m_isStopped;});

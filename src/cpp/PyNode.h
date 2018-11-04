@@ -9,6 +9,16 @@
 
 namespace reactive
 {
+    class PyNodeEdgesMetaData
+    {
+    public:
+        PyNodeEdgesMetaData(std::vector<int> outEdgesIds):m_outEdgesIds(outEdgesIds){}
+        const std::vector<int> GetOutEdgesIds() const {return m_outEdgesIds;}
+
+    private:
+        std::vector<int> m_outEdgesIds;
+    };
+
     class PyFunctionSignature
     {
     public:
@@ -38,7 +48,7 @@ namespace reactive
     class PyNode : public UnitNode
     {
     public:
-        PyNode(sweetPy::object_ptr&& pyFunction, const PyFunctionSignature& signature);
+        PyNode(sweetPy::object_ptr&& pyFunction, const PyFunctionSignature& signature, const PyNodeEdgesMetaData& meta);
         virtual ~PyNode();
 
         void PostStop() override;
@@ -50,6 +60,6 @@ namespace reactive
     class PyNodeFactory
     {
     public:
-        static UnitNode& Create(PyObject* pyFunction, const PyFunctionSignature& signature);
+        static UnitNode& Create(PyObject* pyFunction, const PyFunctionSignature& signature, const PyNodeEdgesMetaData& meta);
     };
 }

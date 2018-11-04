@@ -15,17 +15,20 @@ class GraphEngine(metaclass=utility.Singelton):
 
     def build(self):
         self._nodes.sort(key = lambda elem : elem.inScore)
-        roots = []
-        nodeToNative = {}
-        for node in self._nodes:
-            if node.inScore == 0:
-                roots.append(node)
-            nodeToNative[node] = node.create()
+        roots = [node for node in self._nodes if node.inScore == 0]
 
         while roots:
             currentRoot = roots[0]
-            for outDescriptor in currentRoot.outDescriptors:
-                for consumer in outDescriptor.consumers:
+            if type(currentRoot) == UnitDescriptor:
+                for outDescriptor in currentRoot.outDescriptors:
+                    for consumer in outDescriptor.consumers:
+                        currentRoot.nativeNode.addConsumer(outDescriptor.id, consumer.nativeNode)
+                        consumer.inScore -= 1
+                        if consumer.inScore == 0:
+                            roots.append(consumer)
+            else:
+                for consumer in currentRoot.consumers:
+                    currentRoot.nativeNode.addConsumer(consumer.nativeNode)
                     consumer.inScore -= 1
                     if consumer.inScore == 0:
                         roots.append(consumer)

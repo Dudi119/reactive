@@ -7,4 +7,9 @@ namespace reactive{
     {}
 
     Event::~Event() {}
+
+    sweetPy::object_ptr Event::GetData()
+    {
+        throw core::Exception(__CORE_SOURCE, "Functionality is not supported.");
+    }
 }

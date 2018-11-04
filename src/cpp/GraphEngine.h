@@ -5,6 +5,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <chrono>
+#include <functional>
 #include "core/Thread.h"
 #include "sweetPy/Types/DateTime.h"
 #include "Event.h"
@@ -24,6 +25,7 @@ namespace reactive
         void RegisterNode(std::unique_ptr<GraphNode>&& node);
         void AddTimedEvent(const Event::TimePoint& timePoint, Event* event);
         void AddEvent(Event* event);
+        void AddNodeToCycle(GraphNode& node);
         void Stop();
         void Start(const sweetPy::DateTime& endTime);
 
@@ -33,7 +35,7 @@ namespace reactive
         void EventLoop();
         void PostStart();
         void PostStop();
-        void ConsumeTimedEvents(const Event::TimePoint& upperTimePoint, Consumers& consumers);
+        void ConsumeTimedEvents(const Event::TimePoint& upperTimePoint);
 
     private:
         thread_local static std::mutex m_eventQueueMutex;
@@ -42,7 +44,9 @@ namespace reactive
         std::mutex m_eventQueuesMutex;
         std::vector<std::weak_ptr<NextCycleQueue>> m_totalNextCycleEvents;
         std::vector<std::unique_ptr<GraphNode>> m_nodes;
+        std::list<std::reference_wrapper<GraphNode>> m_currentCycleNodes;
         const std::chrono::milliseconds m_cycleDuration;
+        bool m_isStarted;
         bool m_isStopped;
         std::mutex m_eventLoopMutex;
         std::condition_variable m_eventLoopConv;

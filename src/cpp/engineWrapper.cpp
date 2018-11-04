@@ -2,6 +2,7 @@
 #include "sweetPy/CPythonClass.h"
 #include "sweetPy/CPythonEnum.h"
 #include "GraphEngine.h"
+#include "InputAdapter.h"
 #include "UnitNode.h"
 
 namespace reactive{

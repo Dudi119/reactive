@@ -3,41 +3,36 @@
 #include <unordered_map>
 #include <memory>
 #include <vector>
+#include <functional>
+#include <bitset>
 #include "Event.h"
+#include "InputAdapter.h"
 #include "GraphEngine.h"
 #include "GraphNode.h"
 
 namespace reactive {
 
-    class InputAdapter;
 
     class UnitNode : public GraphNode
     {
     public:
+        typedef int EdgeId;
+
         virtual ~UnitNode();
-        void AddConsumer(int edgeId, UnitNode& consumer);
+        void AddConsumer(EdgeId id, UnitNode& consumer);
+        InputAdapter& GetOutEdge(EdgeId id);
         void PreStart() override;
         void PostStart() override;
         void PostStep() override;
         void PostStop() override;
-        //virtual void Consume(const IEvent::Event_ptr &event) = 0;
-
-    private:
-        /*template<typename T>
-        void Propegate(int edgeId, const T& data)
-        {
-            if(m_consumers.find(edgeId) != m_consumers.end())
-            {
-                for(const GraphNode_ptr& consumer: m_consumers[edgeId])
-                {
-                    GraphEngine::Instance().AddEvent(new Event<T>(consumer, data));
-                }
-            }
-            else
-                throw core::Exception(__CORE_SOURCE, "No edge which supports edgeId - %d exists", edgeId);
-        }*/
+        void MarkInputEdge(int edge);
 
     protected:
-        std::unordered_map<int, std::unique_ptr<InputAdapter>> m_inputAdapters;
+        typedef int LogicalId;
+        static const int MAX_INPUT_EDGES = 50;
+        std::bitset<MAX_INPUT_EDGES> m_tickedInput;
+        std::vector<std::reference_wrapper<InputAdapter>> m_inEdges;
+        std::unordered_map<EdgeId, LogicalId> m_inEdgesMapping;
+        std::unordered_map<EdgeId, InputAdapter> m_outEdges;
     };
 }

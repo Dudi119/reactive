@@ -3,9 +3,9 @@ from os.path import dirname, join
 
 sys.path.append(join(dirname(__file__), '../bin/'))
 sys.path.append(join(dirname(__file__), '../src/python/'))
-from datetime import datetime
+from datetime import datetime, timedelta
 from unit import unit
-from wiring import Edge, __Output__
+from wiring import Edge, __Output__, const
 from graph import sub_graph, graph
 import _core
 from _engine import GraphEngine
@@ -19,13 +19,13 @@ def unitA():
     return x
 
 @unit
-def unitB(scalarInt, inputA = Edge[int]):
+def unitB(scalarInt, inputA = Edge[int], inputB = Edge[int]):
     print(scalarInt)
 
 @sub_graph
 def sub_graph_a():
     x, y = unitA()
-    unitB(1, y)
+    unitB(1, y, const(1, timedelta(microseconds=100)))
     return y
 
 @graph
@@ -43,6 +43,6 @@ if __name__ == "__main__":
     with Logger():
         _core.Environment.instance().init()
         main()
-        GraphEngine.instance().start(datetime(2018, 1, 1, second=3))
+        GraphEngine.instance().start(datetime(2018, 1, 1, second=1))
 
 

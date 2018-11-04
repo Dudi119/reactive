@@ -20,6 +20,7 @@ namespace reactive
         Event(GraphNode& consumer);
         virtual ~Event();
         GraphNode& GetConsumer() { return m_consumer; }
+        virtual sweetPy::object_ptr GetData();
 
     private:
         GraphNode& m_consumer;
@@ -36,6 +37,10 @@ namespace reactive
 
         virtual ~TypedEvent(){}
         T& GetData() const { return m_data; }
+        sweetPy::object_ptr GetData() override
+        {
+            return sweetPy::object_ptr(sweetPy::Object<T>::ToPython(m_data), &sweetPy::Deleter::Owner);
+        }
 
     private:
         T m_data;
