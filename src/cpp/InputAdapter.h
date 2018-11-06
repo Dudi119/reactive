@@ -11,6 +11,12 @@ namespace reactive{
     class UnitNode;
     class Event;
 
+    enum class ConsumeType: short
+    {
+        Non_Collapse,
+        Collapse
+    };
+
     class InputAdapter : public GraphNode
     {
     public:
@@ -22,13 +28,17 @@ namespace reactive{
         void PostStart() override;
         void PostStep() override;
         void PostStop() override;
+        void Invoke() override;
         void AddConsumer(UnitNode& consumer);
-        void ConsumeEvent(std::unique_ptr<Event>&& event);
+        bool ConsumeEvent(std::unique_ptr<Event>&& event);
+        std::vector<std::shared_ptr<Event>> GetEvents();
         static int GenerateId();
 
     private:
         std::list<std::reference_wrapper<UnitNode>> m_consumers;
-        std::vector<std::unique_ptr<Event>> m_events;
+        std::vector<std::shared_ptr<Event>> m_events;
         int m_id;
+        bool m_isTicked;
+        ConsumeType m_consumeType;
     };
 }

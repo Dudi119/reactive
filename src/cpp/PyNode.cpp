@@ -50,6 +50,8 @@ namespace reactive{
 
     PyNode::~PyNode() {}
 
+    void PyNode::Invoke() {}
+
     void PyNode::PostStop()
     {
         sweetPy::GilLock lock;

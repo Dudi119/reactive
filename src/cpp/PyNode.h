@@ -52,6 +52,7 @@ namespace reactive
         virtual ~PyNode();
 
         void PostStop() override;
+        void Invoke() override;
 
     private:
         sweetPy::object_ptr m_pyFunction;

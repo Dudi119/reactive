@@ -78,12 +78,15 @@ namespace reactive
 
     void GraphEngine::ConsumeTimedEvents(const Event::TimePoint& upperTimePoint)
     {
-        while( m_timedEvents.empty() == false && m_timedEvents.begin()->first < upperTimePoint )
+        if(m_timedEvents.empty() == false)
         {
             auto it = m_timedEvents.begin();
-            InputAdapter& inputAdapter = static_cast<InputAdapter&>(it->second->GetConsumer());
-            inputAdapter.ConsumeEvent(std::unique_ptr<Event>(it->second));
-            m_timedEvents.erase(it);
+            while(it != m_timedEvents.end() && it->first < upperTimePoint )
+            {
+                InputAdapter& inputAdapter = static_cast<InputAdapter&>(it->second->GetConsumer());
+                bool consumed = inputAdapter.ConsumeEvent(std::unique_ptr<Event>(it->second));
+                it = consumed ? m_timedEvents.erase(it) : ++it;
+            }
         }
     }
 
