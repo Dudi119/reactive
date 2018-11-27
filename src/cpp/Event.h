@@ -26,7 +26,7 @@ namespace reactive
         GraphNode& m_consumer;
     };
 
-    template<typename T, typename std::enable_if<std::is_copy_constructible<T>::value, bool>::type = true>
+    template<typename T>
     class TypedEvent : public Event
     {
     public:

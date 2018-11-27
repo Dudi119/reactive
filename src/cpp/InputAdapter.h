@@ -4,6 +4,7 @@
 #include <vector>
 #include <functional>
 #include <memory>
+#include "sweetPy/Core/Deleter.h"
 #include "GraphNode.h"
 
 namespace reactive{
@@ -22,6 +23,7 @@ namespace reactive{
     public:
         InputAdapter();
         InputAdapter(int id);
+        InputAdapter(const InputAdapter& object);
         virtual ~InputAdapter();
         int GetId() const{return m_id;}
         void PreStart() override;
@@ -32,11 +34,12 @@ namespace reactive{
         void AddConsumer(UnitNode& consumer);
         bool ConsumeEvent(std::unique_ptr<Event>&& event);
         std::vector<std::shared_ptr<Event>> GetEvents();
+        sweetPy::object_ptr GetLastData() const;
         static int GenerateId();
 
     private:
         std::list<std::reference_wrapper<UnitNode>> m_consumers;
-        std::vector<std::shared_ptr<Event>> m_events;
+        std::unique_ptr<Event> m_event;
         int m_id;
         bool m_isTicked;
         ConsumeType m_consumeType;

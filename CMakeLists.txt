@@ -80,8 +80,6 @@ endif()
 
     add_subdirectory(${PROJECT_DIR}/src)
 
-    include_directories(. ..  ${PROJECT_3RD_LOC}/include ${PYTHON_INCLUDE_DIRS})
-
     link_directories(${PROJECT_3RD_LOC}/lib ${OUTPUT_DIR})
     set(TO_LINK_LIBS pthread Core${CMAKE_DEBUG_POSTFIX}.so)
 
