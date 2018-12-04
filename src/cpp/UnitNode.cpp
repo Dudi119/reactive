@@ -1,5 +1,7 @@
 #include "UnitNode.h"
+#include <Python.h>
 #include "core/Exception.h"
+#include "Event.h"
 
 namespace reactive
 {
@@ -26,11 +28,16 @@ namespace reactive
         return m_outEdges[id];
     }
 
+    void UnitNode::ProduceOutEdgeData(UnitNode& node, int outEdgeId, PyObject* data)
+    {
+        InputAdapter& out = node.GetOutEdge(outEdgeId);
+        std::unique_ptr<Event> event = TypedEventFactory::Create(Py_TYPE(data), out, sweetPy::object_ptr(data, &sweetPy::Deleter::Borrow));
+        out.ConsumeEvent(std::move(event));
+    }
+
     void UnitNode::PreStart(){}
     void UnitNode::PostStart(){}
-    void UnitNode::PostStep()
-    {
-        GraphNode::PostStep();
-    }
+    void UnitNode::PostInvoke(){ m_tickedInput.reset(); GraphNode::PostInvoke(); }
+    void UnitNode::PostStep(){ m_tickedInput.reset(); GraphNode::PostStep(); }
     void UnitNode::PostStop() {}
 }

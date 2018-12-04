@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <Python.h>
 #include "sweetPy/Core/Deleter.h"
+#include "sweetPy/Types/AsciiString.h"
 #include "sweetPy/CPythonObject.h"
 #include "core/Exception.h"
 
@@ -57,7 +58,7 @@ namespace reactive
             else if(type == &PyFloat_Type)
                 return std::unique_ptr<Event>(new TypedEvent<double>(std::forward<Arguments>(arguments)...));
             else if(type == &PyUnicode_Type)
-                return std::unique_ptr<Event>(new TypedEvent<std::string>(std::forward<Arguments>(arguments)...));
+                return std::unique_ptr<Event>(new TypedEvent<sweetPy::AsciiString>(std::forward<Arguments>(arguments)...));
             else if(type == &PyBytes_Type)
                 return std::unique_ptr<Event>(new TypedEvent<std::string>(std::forward<Arguments>(arguments)...));
             else if(type == &PyBool_Type)

@@ -18,6 +18,7 @@ namespace reactive
     {
     public:
         typedef std::vector<Event*> NextCycleQueue;
+        typedef std::list<std::reference_wrapper<GraphNode>>  CurrentCycleNodes;
         typedef std::vector<std::reference_wrapper<GraphNode>> Consumers;
 
         static GraphEngine& Instance();
@@ -36,6 +37,7 @@ namespace reactive
         void PostStart();
         void PostStop();
         void ConsumeTimedEvents(const Event::TimePoint& upperTimePoint);
+        void InvokeCurrentCycle();
 
     private:
         thread_local static std::mutex m_eventQueueMutex;
@@ -44,7 +46,7 @@ namespace reactive
         std::mutex m_eventQueuesMutex;
         std::vector<std::weak_ptr<NextCycleQueue>> m_totalNextCycleEvents;
         std::vector<std::unique_ptr<GraphNode>> m_nodes;
-        std::list<std::reference_wrapper<GraphNode>> m_currentCycleNodes;
+        CurrentCycleNodes m_currentCycleNodes;
         const std::chrono::milliseconds m_cycleDuration;
         bool m_isStarted;
         bool m_isStopped;

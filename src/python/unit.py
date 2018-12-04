@@ -14,7 +14,7 @@ class UnitDescriptor:
         for returnDescriptor in returnDescriptors.values():
            self._outDescriptors.append(OutDescriptor(idGenerator(), returnDescriptor.name, returnDescriptor.type, self))
 
-        self._func = FunctionParser.transformFunction(func)
+        self._func = func
 
     def __call__(self, *args, **kwargs):
         GraphEngine().addNode(self)
@@ -71,6 +71,8 @@ class UnitDescriptor:
 
         self._edgesMeta = _pyNode.PyNodeEdgesMetaData([outDescriptor.id for outDescriptor in self._outDescriptors])
         self._nativeNode = self.create()
+        self._func = FunctionParser.transformFunction(self._func, self)
+        _pyNode.pyNode_UpCast(self._nativeNode).init(self._func, self._sig, self._edgesMeta)
         return OutDescriptorsTuple(self._outDescriptors)
 
     @property
@@ -82,7 +84,7 @@ class UnitDescriptor:
         return self._nativeNode
 
     def create(self):
-        return _pyNode.PyNodeFactory.create(self._func, self._sig, self._edgesMeta)
+        return _pyNode.PyNodeFactory.create()
 
 def unit(func):
     return UnitDescriptor(func)

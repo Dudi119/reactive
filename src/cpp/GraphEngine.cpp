@@ -65,7 +65,7 @@ namespace reactive
     {
         if(m_isStopped == true || m_isStarted == false)
             return;
-        sweetPy::Yield yield;
+        sweetPy::GilRelease release;
         {
             std::unique_lock<std::mutex> guard(m_eventLoopMutex);
             if(m_isStopped == true)
@@ -90,9 +90,28 @@ namespace reactive
         }
     }
 
+    void GraphEngine::InvokeCurrentCycle()
+    {
+        CurrentCycleNodes::iterator it;
+        while(m_currentCycleNodes.empty() == false)
+        {
+            it = m_currentCycleNodes.begin();
+            if(it->get().IsExecuted())
+            {
+                it->get().PostInvoke();
+                m_currentCycleNodes.erase(it);
+            }
+            else
+            {
+                it->get().Invoke();
+                it->get().SetExecuted();
+            }
+        }
+    }
+
     void GraphEngine::Start(const sweetPy::DateTime& endTime)
     {
-        sweetPy::Yield yield;
+        sweetPy::GilRelease release;
         m_eventLoopThread->Start();
         m_isStarted = true;
         std::this_thread::sleep_for(endTime.GetDuration());
@@ -109,6 +128,7 @@ namespace reactive
             {
                 auto cycleStartingTime = std::chrono::system_clock::now();
                 ConsumeTimedEvents(cycleStartingTime + m_cycleDuration);
+                InvokeCurrentCycle();
                 Milliseconds currentCycleDuration = std::chrono::duration_cast<Milliseconds>(std::chrono::system_clock::now() - cycleStartingTime);
                 Milliseconds waitingTime = currentCycleDuration > m_cycleDuration ? Milliseconds(0) : m_cycleDuration - currentCycleDuration;
                 m_eventLoopConv.wait_until(guard, std::chrono::system_clock::now() + waitingTime, [this]{return m_isStopped;});

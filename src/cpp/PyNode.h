@@ -48,10 +48,11 @@ namespace reactive
     class PyNode : public UnitNode
     {
     public:
-        PyNode(sweetPy::object_ptr&& pyFunction, const PyFunctionSignature& signature, const PyNodeEdgesMetaData& meta);
         virtual ~PyNode();
 
+        void Init(PyObject* pyFunction, const PyFunctionSignature& signature, const PyNodeEdgesMetaData& meta);
         void PostStop() override;
+        void PostInvoke() override;
         void Invoke() override;
 
     private:
@@ -62,6 +63,6 @@ namespace reactive
     class PyNodeFactory
     {
     public:
-        static UnitNode& Create(PyObject* pyFunction, const PyFunctionSignature& signature, const PyNodeEdgesMetaData& meta);
+        static UnitNode& Create();
     };
 }

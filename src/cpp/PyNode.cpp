@@ -28,9 +28,13 @@ namespace reactive{
         m_parametersDescriptors.emplace_back(std::make_tuple(parameterUpdate, parameterType, value));
     }
 
-    PyNode::PyNode(sweetPy::object_ptr &&pyFunction, const PyFunctionSignature &signature, const PyNodeEdgesMetaData& meta)
-        :m_pyFunction(std::move(pyFunction))
+    PyNode::~PyNode() {}
+
+    void PyNode::Init(PyObject* pyFunction, const reactive::PyFunctionSignature &signature, const reactive::PyNodeEdgesMetaData &meta)
     {
+        Py_XINCREF(pyFunction);
+        m_pyFunction = sweetPy::object_ptr(pyFunction, &sweetPy::Deleter::Owner);
+
         static LogicalId logicalId = 0;
         auto& params = signature.GetParams();
         for(int paramId = 0; paramId <  params.size(); paramId++)
@@ -40,7 +44,7 @@ namespace reactive{
                 InputAdapter& incomingEdge = sweetPy::Object<InputAdapter&>::FromPython(std::get<PyFunctionSignature::Value>(params[paramId]));
                 EdgeId inputId = incomingEdge.GetId();
                 if(m_inEdgesMapping.find(inputId) != m_inEdgesMapping.end())
-                    throw core::Exception(__CORE_SOURCE, "Input edge already exists - %d", inputId);
+                throw core::Exception(__CORE_SOURCE, "Input edge already exists - %d", inputId);
                 m_inEdgesMapping[inputId] = logicalId++;
                 m_inEdges.emplace_back(incomingEdge);
                 m_arguments.AddElement(paramId, reinterpret_cast<void*>(&incomingEdge), [](void const * const ptr)->PyObject*{
@@ -56,15 +60,13 @@ namespace reactive{
         }
 
         for(EdgeId id : meta.GetOutEdgesIds())
-           m_outEdges.emplace(id, id);
+            m_outEdges.emplace(id, id);
     }
-
-    PyNode::~PyNode() {}
 
     void PyNode::Invoke()
     {
         sweetPy::GilLock lock;
-        sweetPy::Python::InvokeFunction(m_pyFunction, m_arguments);
+        sweetPy::Python::FastInvokeFunction(m_pyFunction, m_arguments);
     }
 
     void PyNode::PostStop()
@@ -73,10 +75,16 @@ namespace reactive{
         m_pyFunction.reset();
     }
 
-    UnitNode& PyNodeFactory::Create(PyObject *pyFunction, const PyFunctionSignature &signature, const PyNodeEdgesMetaData& meta)
+    void PyNode::PostInvoke()
     {
-        Py_XINCREF(pyFunction);
-        std::unique_ptr<GraphNode> node(new PyNode(sweetPy::object_ptr(pyFunction, &sweetPy::Deleter::Owner), signature, meta));
+        UnitNode::PostInvoke();
+        for(auto& outEdgePair : m_outEdges)
+            outEdgePair.second.PostInvoke();
+    }
+
+    UnitNode& PyNodeFactory::Create()
+    {
+        std::unique_ptr<GraphNode> node(new PyNode());
         UnitNode& nodeRef = static_cast<UnitNode&>(*node);
         GraphEngine::Instance().RegisterNode(std::move(node));
         return nodeRef;

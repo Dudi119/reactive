@@ -23,9 +23,11 @@ namespace reactive {
         InputAdapter& GetOutEdge(EdgeId id);
         void PreStart() override;
         void PostStart() override;
+        void PostInvoke() override;
         void PostStep() override;
         void PostStop() override;
         void MarkInputEdge(int edge);
+        static void ProduceOutEdgeData(UnitNode& node, int outEdgeId, PyObject* data);
 
     protected:
         typedef int LogicalId;

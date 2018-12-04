@@ -28,6 +28,7 @@ namespace reactive{
         int GetId() const{return m_id;}
         void PreStart() override;
         void PostStart() override;
+        void PostInvoke() override;
         void PostStep() override;
         void PostStop() override;
         void Invoke() override;

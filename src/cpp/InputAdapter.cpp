@@ -17,9 +17,13 @@ namespace reactive{
     void InputAdapter::PostStep()
     {
         GraphNode::PostStep();
-        m_event.reset();
         m_isTicked = false;
+    }
 
+    void InputAdapter::PostInvoke()
+    {
+        GraphNode::PostStep();
+        m_isTicked = false;
     }
 
     void InputAdapter::PostStop() {}
@@ -38,19 +42,29 @@ namespace reactive{
     {
         if(m_consumeType == ConsumeType::Non_Collapse && m_isTicked == true)
             return false;
+
         m_event = std::move(event);
-        m_isTicked = true;
-        for( auto& consumer : m_consumers )
+        if(m_isTicked == false)
         {
-            consumer.get().MarkInputEdge(m_id);
-            GraphEngine::Instance().AddNodeToCycle(static_cast<GraphNode&>(consumer));
+            m_isTicked = true;
+            for( auto& consumer : m_consumers )
+            {
+                consumer.get().MarkInputEdge(m_id);
+                GraphEngine::Instance().AddNodeToCycle(static_cast<GraphNode&>(consumer));
+            }
         }
         return true;
     }
 
     sweetPy::object_ptr InputAdapter::GetLastData() const
     {
-        return m_event->GetData();
+        if(m_event)
+            return m_event->GetData();
+        else
+        {
+            Py_XINCREF(Py_None);
+            return sweetPy::object_ptr(Py_None, &sweetPy::Deleter::Owner);
+        }
     }
 
     int InputAdapter::GenerateId()

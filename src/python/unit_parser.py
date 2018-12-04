@@ -5,29 +5,59 @@ import inspect
 import types
 import type_checking
 
+
+import sys
+from os.path import dirname, join
+sys.path.append(join(dirname(__file__), '../../bin/'))
+from _pyNode import UnitNode
+
 class ReturnDescriptor:
     __slots__ = ['name', 'type']
-    returnTuple = namedtuple('ReturnTuple', ['name', 'type'])
+    returnTuple = namedtuple('ReturnTuple', ['name', 'type', 'value'])
 
     @type_checking.runtime_check
     def __init__(self, name : str, type):
         self.name = name
         self.type = type
+
+returnAstValueParser = {ast.Num : lambda node : ReturnDescriptor.returnTuple('unknown_int', type(node.n), node.n), #Not more than one anonymus int out edge per unit
+                        ast.Str : lambda node : ReturnDescriptor.returnTuple('unknown_str', type(node.s), node.s), #Not more than one anonymus str out edge per unit
+                        ast.Name : lambda node : ReturnDescriptor.returnTuple(node.id, None, node.id)}
 '''
 def func(x, y):                     def func(x, y):
     __Outputs__(z=int) ---------->      pass
+    return val         ---------->      _pyNode.UnitNode.produceOutEdgeData(node, id, value)
 '''
 class FunctionTransformer( ast.NodeTransformer ):
+    returnAstNameParser = {ast.Num : lambda node : 'unknown_int', #Not more than one anonymus int out edge per unit
+                         ast.Str : lambda node : 'unknown_str', #Not more than one anonymus str out edge per unit
+                         ast.Name : lambda node : node.id}
+    def __init__(self, unitDescriptor):
+        self._unitDescriptor = unitDescriptor
+
+        super(FunctionTransformer, self).__init__()
     def visit_Expr(self, node):
         if isinstance(node.value, ast.Call) and isinstance(node.value.func, ast.Name) and node.value.func.id == '__Outputs__':
             return ast.copy_location(ast.Pass(), node)
         else:
             return node
 
-class FunctionParser:
-    returnAstValueParser = {ast.Num : lambda node : ReturnDescriptor.returnTuple('', type(node.n)),
-                            ast.Name : lambda node : ReturnDescriptor.returnTuple(node.id, None)}
+    def visit_Return(self, node):
+        edgeId, returnTuple = next(((outDescriptor.id, returnAstValueParser[type(node.value)](node.value)) for outDescriptor in self._unitDescriptor.outDescriptors if outDescriptor._name == returnAstValueParser[type(node.value)](node.value).name), None)
+        funcArg = ast.Name('nativeFunc' + str(id(self._unitDescriptor.nativeNode)), ast.Load())
+        nodeArg = ast.Name('nativeNode' + str(id(self._unitDescriptor.nativeNode)), ast.Load())
+        idArg = ast.Num(edgeId)
+        valueArg = None
+        if 'unknown_int' == returnTuple.name:
+           valueArg = ast.Num(returnTuple.value)
+        elif 'unknown_str' == returnTuple.name:
+            valueArg = ast.Str(returnTuple.value)
+        else:
+            valueArg = ast.Name(returnTuple.value, ast.Load())
 
+        return ast.copy_location(ast.Return(ast.Call(funcArg, [nodeArg, idArg, valueArg], [])), node)
+
+class FunctionParser:
     strToType = {'int' : int,
                  'str' : str}
 
@@ -36,7 +66,7 @@ class FunctionParser:
         returnDescriptors = OrderedDict()
         for node in funcDefBody:
             if isinstance(node, ast.Return):
-                returnTuple = FunctionParser.returnAstValueParser[type(node.value)](node.value)
+                returnTuple = returnAstValueParser[type(node.value)](node.value)
                 if returnTuple.name in returnDescriptors:
                     pass
                 else:
@@ -62,10 +92,15 @@ class FunctionParser:
 
     @staticmethod
     @type_checking.runtime_check
-    def transformFunction(func : type_checking.Function):
+    def transformFunction(func : type_checking.Function, unitDescriptor):
+        if 'nativeFunc' + str(id(unitDescriptor.nativeNode)) in func.__globals__ or 'nativeNode' + str(id(unitDescriptor.nativeNode))  in func.__globals__ :
+            raise ValueError('virtual address is already being used, no duplications allowed')
+        func.__globals__['nativeFunc' + str(id(unitDescriptor.nativeNode))] = UnitNode.produceOutEdgeData
+        func.__globals__['nativeNode' + str(id(unitDescriptor.nativeNode))] = unitDescriptor.nativeNode
         astTree = ast.parse(inspect.getsource(func), filename=func.__code__.co_filename, mode='exec')
 
-        FunctionTransformer().visit(astTree)
+        FunctionTransformer(unitDescriptor).visit(astTree)
+        ast.fix_missing_locations(astTree)
         ast.increment_lineno(astTree, func.__code__.co_firstlineno - 1)
         codeObject = compile(astTree, filename=func.__code__.co_filename, mode='exec')
         return types.FunctionType(codeObject.co_consts[0], func.__globals__, func.__name__, func.__defaults__, func.__closure__)
