@@ -5,6 +5,7 @@
 #include "PyNode.h"
 #include "InputAdapter.h"
 #include "ConstNode.h"
+#include "CurveNode.h"
 
 namespace reactive{
 
@@ -37,6 +38,9 @@ namespace reactive{
 
         sweetPy::CPythonClass<ConstNodeFactory> constNodeFactory(module, "ConstNodeFactory", "A ConstNode unit factory.");
         constNodeFactory.AddStaticMethod("create", "Creates ConstNode instance", &ConstNodeFactory::Create);
+    
+        sweetPy::CPythonClass<CurveNodeFactory> curveNodeFactory(module, "CurveNodeFactory", "A CurveNode unit factory.");
+        curveNodeFactory.AddStaticMethod("create", "Creates CurveNode instance", &CurveNodeFactory::Create);
 
         sweetPy::CPythonClass<InputAdapter> inputAdapter(module, "InputAdapter", "A basic representation for a graph root");
         inputAdapter.AddConstructor<int>();

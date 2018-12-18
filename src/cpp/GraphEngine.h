@@ -7,7 +7,7 @@
 #include <chrono>
 #include <functional>
 #include "core/Thread.h"
-#include "sweetPy/Types/DateTime.h"
+#include "sweetPy/Types/TimeDelta.h"
 #include "Event.h"
 
 namespace reactive
@@ -19,6 +19,7 @@ namespace reactive
     public:
         typedef std::vector<Event*> NextCycleQueue;
         typedef std::list<std::reference_wrapper<GraphNode>>  CurrentCycleNodes;
+        typedef std::list<std::reference_wrapper<GraphNode>>  CurrentCycleRoots;
         typedef std::vector<std::reference_wrapper<GraphNode>> Consumers;
 
         static GraphEngine& Instance();
@@ -27,8 +28,9 @@ namespace reactive
         void AddTimedEvent(const Event::TimePoint& timePoint, Event* event);
         void AddEvent(Event* event);
         void AddNodeToCycle(GraphNode& node);
+        void AddRootToCycle(GraphNode& root);
         void Stop();
-        void Start(const sweetPy::DateTime& endTime);
+        void Start(const sweetPy::TimeDelta& endTime);
 
     private:
         void InitiateEventQueue();
@@ -38,6 +40,7 @@ namespace reactive
         void PostStop();
         void ConsumeTimedEvents(const Event::TimePoint& upperTimePoint);
         void InvokeCurrentCycle();
+        void PostCurrentCycle();
 
     private:
         thread_local static std::mutex m_eventQueueMutex;
@@ -47,6 +50,7 @@ namespace reactive
         std::vector<std::weak_ptr<NextCycleQueue>> m_totalNextCycleEvents;
         std::vector<std::unique_ptr<GraphNode>> m_nodes;
         CurrentCycleNodes m_currentCycleNodes;
+        CurrentCycleRoots m_currentCycleRoots;
         const std::chrono::milliseconds m_cycleDuration;
         bool m_isStarted;
         bool m_isStopped;

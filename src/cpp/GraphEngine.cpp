@@ -55,6 +55,11 @@ namespace reactive
             node.SetTicked();
         }
     }
+    
+    void GraphEngine::AddRootToCycle(GraphNode &node)
+    {
+        m_currentCycleRoots.emplace_front(node);
+    }
 
     void GraphEngine::AddTimedEvent(const Event::TimePoint &timePoint, Event *event)
     {
@@ -84,8 +89,12 @@ namespace reactive
             while(it != m_timedEvents.end() && it->first < upperTimePoint )
             {
                 InputAdapter& inputAdapter = static_cast<InputAdapter&>(it->second->GetConsumer());
-                bool consumed = inputAdapter.ConsumeEvent(std::unique_ptr<Event>(it->second));
+                std::unique_ptr<Event> event(it->second);
+                bool consumed = inputAdapter.ConsumeEvent(std::move(event));
+                event.release(); //the unique_ptr shouldn't have owenership, it may remain under m_timedEvents
                 it = consumed ? m_timedEvents.erase(it) : ++it;
+                if(consumed)
+                    GraphEngine::Instance().AddRootToCycle(inputAdapter);
             }
         }
     }
@@ -108,8 +117,17 @@ namespace reactive
             }
         }
     }
+    
+    void GraphEngine::PostCurrentCycle()
+    {
+        for(auto& root : m_currentCycleRoots)
+        {
+            root.get().PostInvoke();
+        }
+        m_currentCycleRoots.clear();
+    }
 
-    void GraphEngine::Start(const sweetPy::DateTime& endTime)
+    void GraphEngine::Start(const sweetPy::TimeDelta& endTime)
     {
         sweetPy::GilRelease release;
         m_eventLoopThread->Start();
@@ -129,6 +147,7 @@ namespace reactive
                 auto cycleStartingTime = std::chrono::system_clock::now();
                 ConsumeTimedEvents(cycleStartingTime + m_cycleDuration);
                 InvokeCurrentCycle();
+                PostCurrentCycle();
                 Milliseconds currentCycleDuration = std::chrono::duration_cast<Milliseconds>(std::chrono::system_clock::now() - cycleStartingTime);
                 Milliseconds waitingTime = currentCycleDuration > m_cycleDuration ? Milliseconds(0) : m_cycleDuration - currentCycleDuration;
                 m_eventLoopConv.wait_until(guard, std::chrono::system_clock::now() + waitingTime, [this]{return m_isStopped;});

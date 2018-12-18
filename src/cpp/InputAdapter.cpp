@@ -7,24 +7,12 @@
 
 namespace reactive{
 
-    InputAdapter::InputAdapter():m_id(-1), m_isTicked(false), m_consumeType(ConsumeType::Non_Collapse){}
-    InputAdapter::InputAdapter(int id):m_id(id), m_isTicked(false), m_consumeType(ConsumeType::Non_Collapse){}
+    InputAdapter::InputAdapter():m_id(-1), m_consumeType(ConsumeType::Non_Collapse){}
+    InputAdapter::InputAdapter(int id):m_id(id), m_consumeType(ConsumeType::Non_Collapse){}
     InputAdapter::~InputAdapter() {}
 
     void InputAdapter::PreStart(){}
     void InputAdapter::PostStart(){}
-
-    void InputAdapter::PostStep()
-    {
-        GraphNode::PostStep();
-        m_isTicked = false;
-    }
-
-    void InputAdapter::PostInvoke()
-    {
-        GraphNode::PostStep();
-        m_isTicked = false;
-    }
 
     void InputAdapter::PostStop() {}
 
@@ -38,12 +26,13 @@ namespace reactive{
         m_consumers.emplace_back(consumer);
     }
 
-    bool InputAdapter::ConsumeEvent(std::unique_ptr<Event> &&event)
+    bool InputAdapter::ConsumeEvent(std::unique_ptr<Event>&& event)
     {
         if(m_consumeType == ConsumeType::Non_Collapse && m_isTicked == true)
             return false;
 
-        m_event = std::move(event);
+        m_event.reset();
+        m_event.reset(event.release());
         if(m_isTicked == false)
         {
             m_isTicked = true;

@@ -28,8 +28,6 @@ namespace reactive{
         int GetId() const{return m_id;}
         void PreStart() override;
         void PostStart() override;
-        void PostInvoke() override;
-        void PostStep() override;
         void PostStop() override;
         void Invoke() override;
         void AddConsumer(UnitNode& consumer);
@@ -42,7 +40,6 @@ namespace reactive{
         std::list<std::reference_wrapper<UnitNode>> m_consumers;
         std::unique_ptr<Event> m_event;
         int m_id;
-        bool m_isTicked;
         ConsumeType m_consumeType;
     };
 }

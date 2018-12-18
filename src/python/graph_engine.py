@@ -1,6 +1,12 @@
 from unit import UnitDescriptor
 import utility
 
+import sys
+from os.path import dirname, join
+sys.path.append(join(dirname(__file__), '../bin/'))
+sys.path.append(join(dirname(__file__), '../src/python/'))
+import _engine
+
 class GraphEngine(metaclass=utility.Singelton):
     __slots__ = ['_nodes']
 
@@ -12,6 +18,10 @@ class GraphEngine(metaclass=utility.Singelton):
 
     def addNode(self, node : UnitDescriptor):
         self._nodes.append(node)
+
+    def start(self, graph, delta):
+        graph()
+        _engine.GraphEngine.instance().start(delta)
 
     def build(self):
         self._nodes.sort(key = lambda elem : elem.inScore)

@@ -2,6 +2,7 @@ import sys
 from os.path import dirname, join
 sys.path.append(join(dirname(__file__), '../../bin/'))
 import _pyNode
+from datetime import timedelta
 
 class EdgeType(type):
     def __getitem__(cls, item):
@@ -25,8 +26,11 @@ class OutDescriptorCreator( type ):
             for arg, (_, value) in zip(args, cls._signature.items()):
                 if type(value) == Edge and (type(arg) == value.type or value.type == 'T'):
                     edgeType = type(arg)
-                elif type(arg) != type(value):
-                    raise TypeError('mismatch between OutDescriptor parameters - {0} is not instance of {1}'.format(type(arg), type(value)))
+                elif type(value) == Edge and (type(arg) == value.type or value.type == 'IT'):
+                    _arg = cls.unpackContainer(arg)
+                    edgeType = type(_arg)
+                else:
+                    cls.validateScalar(arg, value)
 
             if edgeType == None:
                 raise TypeError('OutDescriptor is missing edge type')
@@ -38,6 +42,30 @@ class OutDescriptorCreator( type ):
             setattr(instance, 'nativeNode', instance.create(instance.id))
             GraphEngine().addNode(instance)
             return instance
+
+    def unpackContainer(cls, arg):
+        while cls.isContainer(arg):
+            assert len(arg)
+            arg = arg[0]
+        return arg
+
+    def validateScalar(cls, arg, schemeArg):
+        if arg == None:
+            return
+
+        while cls.isContainer(arg):
+            if type(arg) != type(schemeArg):
+                raise TypeError('mismatch between OutDescriptor parameters - {0} is not instance of {1}'.format(type(arg), type(schemeArg)))
+            if len(arg) == 0:
+                return
+            arg = arg[0]
+            schemeArg = schemeArg[0]
+
+        if type(arg) != schemeArg:
+            raise TypeError('mismatch between OutDescriptor parameters - {0} is not instance of {1}'.format(type(arg), type(schemeArg)))
+
+    def isContainer(cls, arg):
+        return isinstance(arg, list) or isinstance(arg, tuple) or isinstance(arg, dict)
 
 class OutDescriptorsTuple( tuple ):
     pass
@@ -93,6 +121,7 @@ def makeOutDescriptor(name, signature, factory):
 
 
 const = makeOutDescriptor('const', Signature(value=Edge['T']), _pyNode.ConstNodeFactory)
+curve = makeOutDescriptor('curve', Signature(value=Edge['IT'], delta=[timedelta]), _pyNode.CurveNodeFactory)
 
 def __Output__():
     pass

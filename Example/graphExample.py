@@ -3,20 +3,19 @@ from os.path import dirname, join
 
 sys.path.append(join(dirname(__file__), '../bin/'))
 sys.path.append(join(dirname(__file__), '../src/python/'))
-from datetime import datetime, timedelta
+from datetime import timedelta
 from unit import unit
-from wiring import Edge, __Output__, const
+from wiring import Edge, __Output__, const, curve
 from graph import sub_graph, graph
+from graph_engine import GraphEngine
 import _core
-from _engine import GraphEngine
-import _pyNode
 
 @unit
 def unitA(inputA = Edge[int]):
     __Outputs__(a = str)
     print('unitA - inputEdgeA value = {0}'.format(inputA))
     x = 5
-    a = 'hello'
+    a = 'hello yehuda'
     return a
     print(x)
     return x
@@ -29,7 +28,7 @@ def unitB(scalarInt, inputA = Edge[str], inputB = Edge[str]):
 @sub_graph
 def sub_graph_a():
     a, x = unitA(const(5, timedelta(seconds=3)))
-    unitB(1, a, const('hello', timedelta(microseconds=100)))
+    unitB(1, a, curve(['A', 'B'], [timedelta(microseconds=100), timedelta(seconds=5)]))
     return x
 
 @graph
@@ -46,7 +45,7 @@ class Logger:
 if __name__ == "__main__":
     with Logger():
         _core.Environment.instance().init()
-        main()
-        GraphEngine.instance().start(datetime(2018, 1, 1, second=5))
+        GraphEngine().start(main, timedelta(seconds=6))
+
 
 

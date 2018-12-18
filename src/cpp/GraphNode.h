@@ -23,8 +23,10 @@ namespace reactive{
         bool IsExecuted() const {return m_executed;};
         void SetExecuted() { m_executed = true; }
 
-    private:
+    protected:
         bool m_isTicked;
+        
+    private:
         bool m_executed;
     };
 
