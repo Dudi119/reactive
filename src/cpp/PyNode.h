@@ -3,8 +3,7 @@
 #include <Python.h>
 #include <vector>
 #include <tuple>
-#include "sweetPy/Core/Deleter.h"
-#include "sweetPy/Types/Tuple.h"
+#include "sweetPy/sweetPy.h"
 #include "UnitNode.h"
 
 namespace reactive
@@ -56,7 +55,7 @@ namespace reactive
         void Invoke() override;
 
     private:
-        sweetPy::object_ptr m_pyFunction;
+        sweetPy::ObjectPtr m_pyFunction;
         sweetPy::Tuple m_arguments;
     };
 

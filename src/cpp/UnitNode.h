@@ -5,7 +5,6 @@
 #include <vector>
 #include <functional>
 #include <bitset>
-#include "Event.h"
 #include "InputAdapter.h"
 #include "GraphEngine.h"
 #include "GraphNode.h"
@@ -27,6 +26,7 @@ namespace reactive {
         void PostStep() override;
         void PostStop() override;
         void MarkInputEdge(int edge);
+        void Invoke() override;
         static void ProduceOutEdgeData(UnitNode& node, int outEdgeId, PyObject* data);
 
     protected:

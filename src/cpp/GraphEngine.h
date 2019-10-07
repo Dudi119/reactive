@@ -7,7 +7,7 @@
 #include <chrono>
 #include <functional>
 #include "core/Thread.h"
-#include "sweetPy/Types/TimeDelta.h"
+#include "sweetPy/sweetPy.h"
 #include "Event.h"
 
 namespace reactive

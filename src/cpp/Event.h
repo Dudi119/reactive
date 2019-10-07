@@ -4,9 +4,7 @@
 #include <chrono>
 #include <type_traits>
 #include <Python.h>
-#include "sweetPy/Core/Deleter.h"
-#include "sweetPy/Types/AsciiString.h"
-#include "sweetPy/CPythonObject.h"
+#include "sweetPy/sweetPy.h"
 #include "core/Exception.h"
 
 namespace reactive
@@ -21,7 +19,7 @@ namespace reactive
         Event(GraphNode& consumer);
         virtual ~Event();
         GraphNode& GetConsumer() { return m_consumer; }
-        virtual sweetPy::object_ptr GetData();
+        virtual sweetPy::ObjectPtr GetData();
 
     private:
         GraphNode& m_consumer;
@@ -33,14 +31,14 @@ namespace reactive
     public:
         TypedEvent(GraphNode& consumer, const T& data)
                 :Event(consumer), m_data(data) {}
-        TypedEvent(GraphNode& consumer, const sweetPy::object_ptr& data)
-                :Event(consumer), m_data(sweetPy::Object<T>::FromPython(data.get())) {}
+        TypedEvent(GraphNode& consumer, const sweetPy::ObjectPtr& data)
+                :Event(consumer), m_data(sweetPy::Object<T>::from_python(data.get())) {}
 
         virtual ~TypedEvent(){}
         T& GetData() const { return m_data; }
-        sweetPy::object_ptr GetData() override
+        sweetPy::ObjectPtr GetData() override
         {
-            return sweetPy::object_ptr(sweetPy::Object<T>::ToPython(m_data), &sweetPy::Deleter::Owner);
+            return sweetPy::ObjectPtr(sweetPy::Object<T>::to_python(m_data), &sweetPy::Deleter::Owner);
         }
 
     private:

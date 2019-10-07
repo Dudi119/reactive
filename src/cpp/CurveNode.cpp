@@ -5,7 +5,7 @@
 #include "GraphEngine.h"
 
 namespace reactive{
-    CurveNode::CurveNode(int id, const std::vector<sweetPy::object_ptr>& data, const std::vector<sweetPy::TimeDelta>& delta)
+    CurveNode::CurveNode(int id, const std::vector<sweetPy::ObjectPtr>& data, const std::vector<sweetPy::TimeDelta>& delta)
             : InputAdapter(id)
     {
         VERIFY(data.size() == delta.size(), "data size doesn't match delta size");
@@ -14,7 +14,7 @@ namespace reactive{
         while(dataIt != data.end())
         {
             m_curve.emplace_back(nullptr, *deltaIt);
-            m_curve.back().first = std::move(const_cast<sweetPy::object_ptr&>(*dataIt));
+            m_curve.back().first = std::move(const_cast<sweetPy::ObjectPtr&>(*dataIt));
             dataIt++; deltaIt++;
         }
     }
@@ -26,7 +26,7 @@ namespace reactive{
         for(auto& curvePair : m_curve)
         {
             std::unique_ptr<Event> event = TypedEventFactory::Create(curvePair.first->ob_type, *this, curvePair.first);
-            Event::TimePoint eventTime = std::chrono::system_clock::now() + curvePair.second.GetDuration();
+            Event::TimePoint eventTime = std::chrono::system_clock::now() + curvePair.second.get_duration();
             GraphEngine::Instance().AddTimedEvent(eventTime, event.release());
         }
     }
@@ -37,7 +37,7 @@ namespace reactive{
         m_curve.clear();
     }
     
-    InputAdapter& CurveNodeFactory::Create(int id, const std::vector<sweetPy::object_ptr>& data, const std::vector<sweetPy::TimeDelta>& delta)
+    InputAdapter& CurveNodeFactory::Create(int id, const std::vector<sweetPy::ObjectPtr>& data, const std::vector<sweetPy::TimeDelta>& delta)
     {
         VERIFY(data.size() == delta.size(), "data size doesn't match delta size");
         std::unique_ptr<GraphNode> node(new CurveNode(id, data, delta));
