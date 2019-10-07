@@ -1,7 +1,4 @@
 #include "PyNode.h"
-#include "sweetPy/CPythonObject.h"
-#include "sweetPy/Core/Lock.h"
-#include "sweetPy/Core/PythonAssist.h"
 #include "core/Exception.h"
 #include "GraphEngine.h"
 #include "InputAdapter.h"
@@ -33,7 +30,7 @@ namespace reactive{
     void PyNode::Init(PyObject* pyFunction, const reactive::PyFunctionSignature &signature, const reactive::PyNodeEdgesMetaData &meta)
     {
         Py_XINCREF(pyFunction);
-        m_pyFunction = sweetPy::object_ptr(pyFunction, &sweetPy::Deleter::Owner);
+        m_pyFunction = sweetPy::ObjectPtr(pyFunction, &sweetPy::Deleter::Owner);
 
         static LogicalId logicalId = 0;
         auto& params = signature.GetParams();
@@ -41,13 +38,13 @@ namespace reactive{
         {
             if(std::get<PyFunctionSignature::Update>(params[paramId]) == PyFunctionSignature::Edge)
             {
-                InputAdapter& incomingEdge = sweetPy::Object<InputAdapter&>::FromPython(std::get<PyFunctionSignature::Value>(params[paramId]));
+                InputAdapter& incomingEdge = sweetPy::Object<InputAdapter&>::from_python(std::get<PyFunctionSignature::Value>(params[paramId]));
                 EdgeId inputId = incomingEdge.GetId();
                 if(m_inEdgesMapping.find(inputId) != m_inEdgesMapping.end())
                 throw core::Exception(__CORE_SOURCE, "Input edge already exists - %d", inputId);
                 m_inEdgesMapping[inputId] = logicalId++;
                 m_inEdges.emplace_back(incomingEdge);
-                m_arguments.AddElement(paramId, reinterpret_cast<void*>(&incomingEdge), [](void const * const ptr)->PyObject*{
+                m_arguments.add_element(reinterpret_cast<void*>(&incomingEdge), [](void const * const ptr)->PyObject*{
                     const InputAdapter& inputAdapter = *reinterpret_cast<InputAdapter const *>(ptr);
                     return inputAdapter.GetLastData().release();
                 });
@@ -55,7 +52,7 @@ namespace reactive{
             else //Scalar
             {
                 PyObject* scalar = std::get<PyFunctionSignature::Value>(params[paramId]);
-                m_arguments.AddElement(paramId, sweetPy::object_ptr(scalar, &sweetPy::Deleter::Borrow));
+                m_arguments.add_element(sweetPy::ObjectPtr(scalar, &sweetPy::Deleter::Borrow));
             }
         }
 
@@ -66,7 +63,7 @@ namespace reactive{
     void PyNode::Invoke()
     {
         sweetPy::GilLock lock;
-        sweetPy::Python::FastInvokeFunction(m_pyFunction, m_arguments);
+        sweetPy::Python::fast_invoke_function(m_pyFunction, m_arguments);
     }
 
     void PyNode::PostStop()

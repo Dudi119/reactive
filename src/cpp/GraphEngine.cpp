@@ -1,6 +1,5 @@
 #include "GraphEngine.h"
 #include <thread>
-#include "sweetPy/Core/Lock.h"
 #include "UnitNode.h"
 #include "InputAdapter.h"
 
@@ -22,7 +21,6 @@ namespace reactive
 
     GraphEngine::GraphEngine(): m_cycleDuration(2), m_isStarted(false)
     {
-        m_eventLoopThread.reset(new core::Thread("GraphEngine Event loop thread", std::bind(&GraphEngine::EventLoop, this)));
     }
 
     void GraphEngine::InitiateEventQueue()
@@ -78,7 +76,7 @@ namespace reactive
             m_isStopped = true;
             m_eventLoopConv.notify_one();
         }
-        m_eventLoopThread->Join();
+        m_eventLoopThread->join();
     }
 
     void GraphEngine::ConsumeTimedEvents(const Event::TimePoint& upperTimePoint)
@@ -130,9 +128,12 @@ namespace reactive
     void GraphEngine::Start(const sweetPy::TimeDelta& endTime)
     {
         sweetPy::GilRelease release;
-        m_eventLoopThread->Start();
+        if(m_isStarted)
+            throw core::Exception(__CORE_SOURCE, "Engine already initiated");
+        
+        m_eventLoopThread.reset(new core::Thread("GraphEngine Event loop thread", std::bind(&GraphEngine::EventLoop, this)));
         m_isStarted = true;
-        std::this_thread::sleep_for(endTime.GetDuration());
+        std::this_thread::sleep_for(endTime.get_duration());
         Stop();
     }
 

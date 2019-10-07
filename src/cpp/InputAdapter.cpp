@@ -45,14 +45,14 @@ namespace reactive{
         return true;
     }
 
-    sweetPy::object_ptr InputAdapter::GetLastData() const
+    sweetPy::ObjectPtr InputAdapter::GetLastData() const
     {
         if(m_event)
             return m_event->GetData();
         else
         {
             Py_XINCREF(Py_None);
-            return sweetPy::object_ptr(Py_None, &sweetPy::Deleter::Owner);
+            return sweetPy::ObjectPtr(Py_None, &sweetPy::Deleter::Owner);
         }
     }
 

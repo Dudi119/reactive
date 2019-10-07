@@ -1,35 +1,4 @@
 if (NOT Core_FOUND)
-	if (WIN32)
-		include(cppkinMacro)
-		LinuxPath_ToWinPath(${PROJECT_3RD_LOC} INSTALL_DIR_WIN)
-		LinuxPath_ToWinPath(${PROJECT_3RD_LOC}/src/Core SOURCE_DIR_WIN)
-		
-		ExternalProject_Add(Core
-				GIT_REPOSITORY      https://github.com/Dudi119/Core
-				CONFIGURE_COMMAND   cd ${SOURCE_DIR_WIN} && cmake -G "Visual Studio 12" -DCORE_3RD_PARTY_DIR:STRING=${INSTALL_DIR_WIN} -DCORE_SPDLOG_SUPPORT=OFF -DCORE_COMPILE_STEP=ON -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} .
-				BUILD_COMMAND       cd ${SOURCE_DIR_WIN} && CMD /C msbuild Core.vcxproj /p:Configuration=${CMAKE_BUILD_TYPE}
-				INSTALL_COMMAND     ""
-				TEST_COMMAND        ""
-				)
-				
-		ExternalProject_Add_Step(Core Core_Create_HeadersDir
-				COMMAND     if not exist ${INSTALL_DIR_WIN}\\include\\core mkdir ${INSTALL_DIR_WIN}\\include\\core
-				DEPENDEES   install
-				)
-		ExternalProject_Add_Step(Core Core_Install_Headers
-				COMMAND     xcopy ${SOURCE_DIR_WIN}\\src\\*.h ${INSTALL_DIR_WIN}\\include\\core /E
-				DEPENDEES   install
-				)
-
-		ExternalProject_Add_Step(Core Core_Create_Libs_Dir
-				COMMAND     if not exist ${INSTALL_DIR_WIN}\\lib mkdir ${INSTALL_DIR_WIN}\\lib
-				DEPENDEES   install
-				)
-		ExternalProject_Add_Step(Core Core_Install_Libs
-				COMMAND     copy ${SOURCE_DIR_WIN}\\${CMAKE_BUILD_TYPE}\\Core${CMAKE_DEBUG_POSTFIX}.dll ${INSTALL_DIR_WIN}\\lib && copy ${SOURCE_DIR_WIN}\\${CMAKE_BUILD_TYPE}\\Core${CMAKE_DEBUG_POSTFIX}.lib ${INSTALL_DIR_WIN}\\lib
-				DEPENDEES   install
-				)
-	else()
 		ExternalProject_Add(Core
 				GIT_REPOSITORY      https://github.com/Dudi119/Core
 				CONFIGURE_COMMAND   cd <SOURCE_DIR> && cmake -DCORE_3RD_PARTY_DIR:STRING=<INSTALL_DIR> -DCORE_SPDLOG_SUPPORT=OFF -DCORE_COMPILE_STEP=ON -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} .
@@ -44,11 +13,9 @@ if (NOT Core_FOUND)
 		)
 
     ExternalProject_Get_Property(Core INSTALL_DIR)
-    add_custom_target(Core_stub)
-		
+    set(SWEETPY_DEPEND_LIST ${SWEETPY_DEPEND_LIST} Core)
+    set(REACTIVE_DEPEND_LIST ${REACTIVE_DEPEND_LIST} Core)
 
-	endif ()
-	
 	ExternalProject_Get_Property(Core INSTALL_DIR)
 
 	set (Core_ROOT_DIR          ${INSTALL_DIR})

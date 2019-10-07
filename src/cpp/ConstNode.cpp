@@ -4,7 +4,7 @@
 #include "GraphEngine.h"
 
 namespace reactive{
-    ConstNode::ConstNode(int id, sweetPy::object_ptr &&value, const sweetPy::TimeDelta &delta)
+    ConstNode::ConstNode(int id, sweetPy::ObjectPtr &&value, const sweetPy::TimeDelta &delta)
         : InputAdapter(id), m_value(std::move(value)), m_delta(delta)
     {}
 
@@ -13,7 +13,7 @@ namespace reactive{
     void ConstNode::PostStart()
     {
         std::unique_ptr<Event> event = TypedEventFactory::Create(m_value->ob_type, *this, m_value);
-        Event::TimePoint eventTime = std::chrono::system_clock::now() + m_delta.GetDuration();
+        Event::TimePoint eventTime = std::chrono::system_clock::now() + m_delta.get_duration();
         GraphEngine::Instance().AddTimedEvent(eventTime, event.release());
     }
 
@@ -26,7 +26,7 @@ namespace reactive{
     InputAdapter& ConstNodeFactory::Create(int id, PyObject *value, const sweetPy::TimeDelta &delta)
     {
         Py_XINCREF(value);
-        std::unique_ptr<GraphNode> node(new ConstNode(id, sweetPy::object_ptr(value, &sweetPy::Deleter::Owner), delta));
+        std::unique_ptr<GraphNode> node(new ConstNode(id, sweetPy::ObjectPtr(value, &sweetPy::Deleter::Owner), delta));
         InputAdapter& nodeRef = static_cast<InputAdapter&>(*node);
         GraphEngine::Instance().RegisterNode(std::move(node));
         return nodeRef;

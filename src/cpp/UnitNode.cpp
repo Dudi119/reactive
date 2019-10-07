@@ -31,7 +31,7 @@ namespace reactive
     void UnitNode::ProduceOutEdgeData(UnitNode& node, int outEdgeId, PyObject* data)
     {
         InputAdapter& out = node.GetOutEdge(outEdgeId);
-        std::unique_ptr<Event> event = TypedEventFactory::Create(Py_TYPE(data), out, sweetPy::object_ptr(data, &sweetPy::Deleter::Borrow));
+        std::unique_ptr<Event> event = TypedEventFactory::Create(Py_TYPE(data), out, sweetPy::ObjectPtr(data, &sweetPy::Deleter::Borrow));
         out.ConsumeEvent(std::move(event));
     }
 
@@ -40,4 +40,5 @@ namespace reactive
     void UnitNode::PostInvoke(){ m_tickedInput.reset(); GraphNode::PostInvoke(); }
     void UnitNode::PostStep(){ m_tickedInput.reset(); GraphNode::PostStep(); }
     void UnitNode::PostStop() {}
+    void UnitNode::Invoke() {throw core::Exception(__CORE_SOURCE, "Not implemented");}
 }

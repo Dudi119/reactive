@@ -4,7 +4,7 @@
 #include <vector>
 #include <functional>
 #include <memory>
-#include "sweetPy/Core/Deleter.h"
+#include "sweetPy/sweetPy.h"
 #include "GraphNode.h"
 
 namespace reactive{
@@ -33,7 +33,7 @@ namespace reactive{
         void AddConsumer(UnitNode& consumer);
         bool ConsumeEvent(std::unique_ptr<Event>&& event);
         std::vector<std::shared_ptr<Event>> GetEvents();
-        sweetPy::object_ptr GetLastData() const;
+        sweetPy::ObjectPtr GetLastData() const;
         static int GenerateId();
 
     private:
