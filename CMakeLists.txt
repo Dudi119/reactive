@@ -49,8 +49,8 @@ if(NOT ${3RD_LOC_PREFIX_ADDED})
     list(APPEND CMAKE_PREFIX_PATH ${PROJECT_3RD_LOC})
 endif()
 set(IS_PY_DEBUG OFF)
-include(Utility)
-IS_PYTHON_DEBUG()
+#include(Utility)
+#IS_PYTHON_DEBUG()
 if(IS_PY_DEBUG)
     message(STATUS "python debug macros are set - Py_TRACE_REF, Py_DEBUG, LLTRACE, Py_REF_DEBUG")
     add_definitions(-DPy_TRACE_REF -DPy_DEBUG -DLLTRACE -DPy_REF_DEBUG)
@@ -60,6 +60,12 @@ message(STATUS "third party installation path - ${PROJECT_3RD_LOC}")
 find_package(Core)
 find_package(Python)
 find_package(SweetPy)
+
+SET(TEST_DEPENDECIES "")
+option(WITH_TESTS "Test support" ON)
+if(WITH_TESTS)
+    find_package(GoogleTest)
+endif()
 
 include(installThirdParty)
 
@@ -104,4 +110,8 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 add_subdirectory(${PROJECT_DIR}/src)
+
+if(WITH_TESTS)
+    add_subdirectory(${PROJECT_DIR}/tests)
+endif()
 
