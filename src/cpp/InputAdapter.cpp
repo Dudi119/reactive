@@ -9,6 +9,8 @@ namespace reactive{
 
     InputAdapter::InputAdapter():m_id(-1), m_consumeType(ConsumeType::Non_Collapse){}
     InputAdapter::InputAdapter(int id):m_id(id), m_consumeType(ConsumeType::Non_Collapse){}
+    InputAdapter::InputAdapter(const InputAdapter& obj):m_consumers(obj.m_consumers), m_id(GenerateId()),
+        m_consumeType(obj.m_consumeType){}
     InputAdapter::~InputAdapter() {}
 
     void InputAdapter::PreStart(){}

@@ -23,7 +23,7 @@ namespace reactive{
     public:
         InputAdapter();
         InputAdapter(int id);
-        InputAdapter(const InputAdapter& object);
+        InputAdapter(const InputAdapter& obj);
         virtual ~InputAdapter();
         int GetId() const{return m_id;}
         void PreStart() override;
