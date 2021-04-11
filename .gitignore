@@ -47,3 +47,5 @@ compile_commands.json
 .gdb_history
 .vscode/settings.json
 bin/reactiveTests
+.vs/
+out/

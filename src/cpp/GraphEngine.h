@@ -29,8 +29,9 @@ namespace reactive
         void AddEvent(Event* event);
         void AddNodeToCycle(GraphNode& node);
         void AddRootToCycle(GraphNode& root);
+        void Dispose();
         void Stop();
-        void Start(const sweetPy::TimeDelta& endTime);
+        void Start(const sweetPy::TimeDelta& endTime, bool forceStart = false);
 
     private:
         void InitiateEventQueue();
@@ -43,7 +44,6 @@ namespace reactive
         void PostCurrentCycle();
 
     private:
-        thread_local static std::mutex m_eventQueueMutex;
         thread_local static std::shared_ptr<NextCycleQueue> m_nextCycleEvents;
         std::multimap<Event::TimePoint, Event*> m_timedEvents;
         std::mutex m_eventQueuesMutex;

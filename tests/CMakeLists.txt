@@ -28,10 +28,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${PROJECT_BUILD_DIR}/bin)
 set(CMAKE_BINARY_DIR ${PROJECT_BUILD_DIR}/bin)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BUILD_DIR}/bin)
 
-include_directories(. ..  ${PROJECT_DIR} ${PROJECT_DIR}/../src/cpp ${PROJECT_3RD_LOC}}/include)
 link_directories(${PROJECT_3RD_LOC}/lib ${PROJECT_DIR}/../bin)
 
 add_executable(reactiveTests Tests.cpp)
+target_include_directories(reactiveTests PRIVATE . ..  ${PROJECT_DIR} ${PROJECT_DIR}/../src/cpp ${PROJECT_3RD_LOC}}/include)
 if(TEST_DEPENDECIES)
     add_dependencies(reactiveTests ${TEST_DEPENDECIES})
 endif()

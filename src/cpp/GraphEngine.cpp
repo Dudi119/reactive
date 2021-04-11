@@ -5,7 +5,6 @@
 
 namespace reactive
 {
-    thread_local std::mutex GraphEngine::m_eventQueueMutex{};
     thread_local std::shared_ptr<GraphEngine::NextCycleQueue> GraphEngine::m_nextCycleEvents{};
 
     GraphEngine& GraphEngine::Instance()
@@ -41,7 +40,6 @@ namespace reactive
     {
         if(m_nextCycleEvents.get() == nullptr)
             InitiateEventQueue();
-        std::lock_guard<std::mutex> guard(m_eventQueueMutex);
         m_nextCycleEvents->push_back(event);
     }
 
@@ -62,6 +60,11 @@ namespace reactive
     void GraphEngine::AddTimedEvent(const Event::TimePoint &timePoint, Event *event)
     {
         m_timedEvents.insert(std::make_pair(timePoint, event));
+    }
+
+    void GraphEngine::Dispose()
+    {
+        m_nodes.clear();
     }
 
     void GraphEngine::Stop()
@@ -125,14 +128,15 @@ namespace reactive
         m_currentCycleRoots.clear();
     }
 
-    void GraphEngine::Start(const sweetPy::TimeDelta& endTime)
+    void GraphEngine::Start(const sweetPy::TimeDelta& endTime, bool forceStart)
     {
         sweetPy::GilRelease release;
-        if(m_isStarted)
+        if(m_isStarted && !forceStart)
             throw core::Exception(__CORE_SOURCE, "Engine already initiated");
         
         m_eventLoopThread.reset(new core::Thread("GraphEngine Event loop thread", std::bind(&GraphEngine::EventLoop, this)));
         m_isStarted = true;
+        m_isStopped = false;
         std::this_thread::sleep_for(endTime.get_duration());
         Stop();
     }

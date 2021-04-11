@@ -94,7 +94,7 @@ set(EXECUTABLE_OUTPUT_PATH ${OUTPUT_DIR})
 link_directories(${PROJECT_3RD_LOC}/lib ${OUTPUT_DIR})
 set(TO_LINK_LIBS pthread Core${CMAKE_DEBUG_POSTFIX}.so)
 
-include_directories(${PROJECT_DIR}/src ${PROJECT_3RD_LOC}/include ${PYTHON_INCLUDE_DIRS})
+include_directories(${PROJECT_DIR} ${PROJECT_DIR}/src ${PROJECT_3RD_LOC}/include ${PYTHON_INCLUDE_DIRS})
 add_library(reactive SHARED src/cpp/UnitNode.cpp src/cpp/UnitNode.h src/cpp/GraphEngine.cpp src/cpp/PyNode.cpp src/cpp/InputAdapter.h src/cpp/InputAdapter.cpp src/cpp/ConstNode.h src/cpp/ConstNode.cpp src/cpp/Event.cpp src/cpp/GraphNode.h src/cpp/CurveNode.cpp src/cpp/CurveNode.h)
 if(REACTIVE_DEPEND_LIST)
     add_dependencies(reactive ${REACTIVE_DEPEND_LIST})
@@ -104,7 +104,7 @@ add_custom_command(TARGET reactive POST_BUILD
         COMMAND cmake -E copy_directory ${PROJECT_DIR}/src/python ${PYTHON_OUTPUT_DIR})
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -pedantic -Wno-unused-but-set-variable -Wno-sign-compare -Wno-unused-variable")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -pedantic -Wno-unused-but-set-variable -Wno-sign-compare -Wno-unused-variable -Wno-terminate" CACHE STRING "compile flags" FORCE)
 endif()
 
 add_subdirectory(${PROJECT_DIR}/src)
