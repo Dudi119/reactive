@@ -21,7 +21,7 @@ class GraphEngine(metaclass=utility.Singelton):
 
     def start(self, graph, delta):
         graph()
-        _engine.GraphEngine.instance().start(delta)
+        _engine.GraphEngine.instance().start(delta, False)
 
     def build(self):
         self._nodes.sort(key = lambda elem : elem.inScore)

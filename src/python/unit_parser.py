@@ -21,8 +21,9 @@ class ReturnDescriptor:
         self.type = type
 
 returnAstValueParser = {ast.Num : lambda node : ReturnDescriptor.returnTuple('unknown_int', type(node.n), node.n), #Not more than one anonymus int out edge per unit
-                        ast.Str : lambda node : ReturnDescriptor.returnTuple('unknown_str', type(node.s), node.s), #Not more than one anonymus str out edge per unit
-                        ast.Name : lambda node : ReturnDescriptor.returnTuple(node.id, None, node.id)}
+                        ast.Str : lambda node : ReturnDescriptor.returnTuple('unknown_str' + node.s, type(node.s), node.s), #Not more than one anonymus str out edge per unit
+                        ast.Name : lambda node : ReturnDescriptor.returnTuple(node.id, None, node.id),
+                        ast.Constant : lambda node : ReturnDescriptor.returnTuple('unknown_int' if type(node.n) == int else 'unknown_str', type(node.n), node.n)} #Not more than one anonymus int out edge per unit
 '''
 def func(x, y):                     def func(x, y):
     __Outputs__(z=int) ---------->      pass
