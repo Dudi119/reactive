@@ -95,11 +95,14 @@ link_directories(${PROJECT_3RD_LOC}/lib ${OUTPUT_DIR})
 set(TO_LINK_LIBS pthread Core${CMAKE_DEBUG_POSTFIX}.so)
 
 include_directories(${PROJECT_DIR} ${PROJECT_DIR}/src ${PROJECT_3RD_LOC}/include ${PYTHON_INCLUDE_DIRS})
-add_library(reactive SHARED src/cpp/UnitNode.cpp src/cpp/UnitNode.h src/cpp/GraphEngine.cpp src/cpp/PyNode.cpp src/cpp/InputAdapter.h src/cpp/InputAdapter.cpp src/cpp/ConstNode.h src/cpp/ConstNode.cpp src/cpp/Event.cpp src/cpp/GraphNode.h src/cpp/CurveNode.cpp src/cpp/CurveNode.h)
+add_library(reactive SHARED src/cpp/UnitNode.cpp src/cpp/UnitNode.h src/cpp/GraphEngine.cpp src/cpp/PyNode.cpp src/cpp/InputAdapter.h src/cpp/InputAdapter.cpp src/cpp/ConstNode.h src/cpp/ConstNode.cpp src/cpp/Event.cpp src/cpp/GraphNode.h src/cpp/CurveNode.cpp src/cpp/CurveNode.h src/cpp/ConcurrentFunction.h src/cpp/ConcurrentOrchestrator.h src/cpp/ConcurrentOrchestrator.cpp src/cpp/Executor.h src/cpp/Executor.cpp)
+add_executable(executor src/cpp/ConcurrentFunction.h src/cpp/ConcurrentOrchestrator.h src/cpp/ConcurrentOrchestrator.cpp src/cpp/Executor.h src/cpp/Executor.cpp)
 if(REACTIVE_DEPEND_LIST)
     add_dependencies(reactive ${REACTIVE_DEPEND_LIST})
+    add_dependencies(executor ${REACTIVE_DEPEND_LIST})
 endif()
 target_link_libraries(reactive ${TO_LINK_LIBS})
+target_link_libraries(executor ${TO_LINK_LIBS})
 add_custom_command(TARGET reactive POST_BUILD
         COMMAND cmake -E copy_directory ${PROJECT_DIR}/src/python ${PYTHON_OUTPUT_DIR})
 

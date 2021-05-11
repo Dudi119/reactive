@@ -8,6 +8,7 @@
 #include <functional>
 #include "core/Thread.h"
 #include "sweetPy/sweetPy.h"
+#include "ConcurrentOrchestrator.h"
 #include "Event.h"
 
 namespace reactive
@@ -32,6 +33,7 @@ namespace reactive
         void Dispose();
         void Stop();
         void Start(const sweetPy::TimeDelta& endTime, bool forceStart = false);
+        void InvokeConcurrentFunction(const std::string& function);
 
     private:
         void InitiateEventQueue();
@@ -57,5 +59,6 @@ namespace reactive
         std::mutex m_eventLoopMutex;
         std::condition_variable m_eventLoopConv;
         std::unique_ptr<core::Thread> m_eventLoopThread;
+        ConcurrentOrchestrator m_tasksOrchestrator;
     };
 }

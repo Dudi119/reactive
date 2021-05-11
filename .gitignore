@@ -49,3 +49,8 @@ compile_commands.json
 bin/reactiveTests
 .vs/
 out/
+*.json
+bin/reactiveTests
+bin/reactiveTests
+bin/executor
+bin/reactiveTests

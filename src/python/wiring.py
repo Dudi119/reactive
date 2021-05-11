@@ -9,7 +9,6 @@ class EdgeType(type):
         return Edge(item)
 
 class Edge(metaclass=EdgeType):
-    __class__ = EdgeType
     __all__ = ['type']
     def __init__(self, type):
         self.type = type
@@ -17,7 +16,7 @@ class Edge(metaclass=EdgeType):
 def idGenerator():
     return _pyNode.InputAdapter.generateId()
 
-class OutDescriptorCreator( type ):
+class OutDescriptorCreator(type):
     def __call__(cls, *args, **kwargs):
         if cls is OutDescriptor:
             return super(OutDescriptorCreator, cls).__call__(*args, **kwargs)

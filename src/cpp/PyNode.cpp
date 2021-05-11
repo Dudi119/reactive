@@ -27,11 +27,22 @@ namespace reactive{
 
     PyNode::~PyNode() {}
 
+    void PyNode::Init(const std::string& serializedFunction, const reactive::PyFunctionSignature &signature, const reactive::PyNodeEdgesMetaData &meta)
+    {
+        m_serializedFunction.reset(new std::string(serializedFunction));
+        m_concurrent = true;
+        _Init(signature, meta);
+    }
+
     void PyNode::Init(PyObject* pyFunction, const reactive::PyFunctionSignature &signature, const reactive::PyNodeEdgesMetaData &meta)
     {
         Py_XINCREF(pyFunction);
         m_pyFunction = sweetPy::ObjectPtr(pyFunction, &sweetPy::Deleter::Owner);
+        _Init(signature, meta);
+    }
 
+    void PyNode::_Init(const reactive::PyFunctionSignature &signature, const reactive::PyNodeEdgesMetaData &meta)
+    {
         static LogicalId logicalId = 0;
         auto& params = signature.GetParams();
         for(int paramId = 0; paramId <  params.size(); paramId++)
@@ -62,8 +73,15 @@ namespace reactive{
 
     void PyNode::Invoke()
     {
-        sweetPy::GilLock lock;
-        sweetPy::Python::fast_invoke_function(m_pyFunction, m_arguments);
+        if(m_concurrent)
+        {
+            GraphEngine::Instance().InvokeConcurrentFunction(*m_serializedFunction);
+        }
+        else
+        {
+            sweetPy::GilLock lock;
+            sweetPy::Python::fast_invoke_function(m_pyFunction, m_arguments);
+        }
     }
 
     void PyNode::PostStop()

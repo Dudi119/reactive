@@ -1,16 +1,21 @@
 import sys
 from os.path import dirname, join
+import os
+
+print(os.getpid())
 
 sys.path.append(join(dirname(__file__), '../bin/'))
 sys.path.append(join(dirname(__file__), '../src/python/'))
 from datetime import timedelta
-from unit import unit
+from unit import unit, parallelUnit
 from wiring import Edge, __Output__, const, curve
 from graph import sub_graph, graph
 from graph_engine import GraphEngine
 import _core
 
-@unit
+edge = Edge[int]
+
+@parallelUnit
 def unitA(inputA = Edge[int]):
     __Outputs__(a = str)
     print('unitA - inputEdgeA value = {0}'.format(inputA))
@@ -20,7 +25,7 @@ def unitA(inputA = Edge[int]):
     print(x)
     return x
 
-@unit
+@parallelUnit
 def unitB(scalarInt, inputA = Edge[str], inputB = Edge[str]):
     print('unitB - scalarInt value = {0}, inputEdgeA value = {1}, inputEdgeB value = {2}'.format(scalarInt, inputA, inputB))
     return 5
@@ -45,7 +50,7 @@ class Logger:
 if __name__ == "__main__":
     with Logger():
         _core.Environment.instance().init()
-        GraphEngine().start(main, timedelta(seconds=6))
+        GraphEngine().start(main, timedelta(minutes=5))
 
 
 

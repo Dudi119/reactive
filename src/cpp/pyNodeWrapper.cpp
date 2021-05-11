@@ -16,7 +16,8 @@ namespace reactive{
         pyNodeFactory.add_static_method("create", "Creates PyNode instance", &PyNodeFactory::Create);
 
         sweetPy::Clazz<PyNode> pyNode(module, "PyNode", "A representation for graph node");
-        pyNode.add_method("init", "constructor extension for pyNode", &PyNode::Init);
+        pyNode.add_method("initWithConcurrent", "constructor extension for pyNode", static_cast<void(PyNode::*)(const std::string&, const PyFunctionSignature&, const PyNodeEdgesMetaData&)>(&PyNode::Init));
+        pyNode.add_method("init", "constructor extension for pyNode", static_cast<void(PyNode::*)(PyObject*, const PyFunctionSignature&, const PyNodeEdgesMetaData&)>(&PyNode::Init));
 
         sweetPy::Clazz<UnitNode> unitNode(module, "UnitNode", "A basic representation for graph node");
         unitNode.add_method("addConsumer", "will wire a consumer", &UnitNode::AddConsumer);

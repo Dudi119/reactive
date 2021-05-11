@@ -1,14 +1,18 @@
 import sys
+import cloudpickle
 from os.path import dirname, join
 import inspect
 from unit_parser import FunctionParser
+import collections
 
 sys.path.append(join(dirname(__file__), '../../bin/'))
 import _pyNode
 
 class UnitDescriptor:
-    def __init__(self, func):
+    def __init__(self, func, funcAsByteArray, isConcurrent):
         self._outDescriptors = []
+        self._funcAsByteArray = funcAsByteArray
+        self._isConcurrent = isConcurrent
         self.inScore = 0
         returnDescriptors = FunctionParser.getDescriptor(func)
         for returnDescriptor in returnDescriptors.values():
@@ -72,7 +76,10 @@ class UnitDescriptor:
         self._edgesMeta = _pyNode.PyNodeEdgesMetaData([outDescriptor.id for outDescriptor in self._outDescriptors])
         self._nativeNode = self.create()
         self._func = FunctionParser.transformFunction(self._func, self)
-        _pyNode.pyNode_UpCast(self._nativeNode).init(self._func, self._sig, self._edgesMeta)
+        if self._isConcurrent:
+            _pyNode.pyNode_UpCast(self._nativeNode).initWithConcurrent(self._funcAsByteArray, self._sig, self._edgesMeta)
+        else:
+            _pyNode.pyNode_UpCast(self._nativeNode).init(self._func, self._sig, self._edgesMeta)
         return OutDescriptorsTuple(self._outDescriptors)
 
     @property
@@ -87,7 +94,12 @@ class UnitDescriptor:
         return _pyNode.PyNodeFactory.create()
 
 def unit(func):
-    return UnitDescriptor(func)
+    return UnitDescriptor(func, None, False)
+
+def parallelUnit(func):
+    functionAsByteArray = cloudpickle.dumps(func)
+    return UnitDescriptor(func, functionAsByteArray, True)
+
 #due to dependency, wait for unit to complete initialization
 from graph_engine import GraphEngine
 from wiring import Edge, OutDescriptor, OutDescriptorsTuple, idGenerator

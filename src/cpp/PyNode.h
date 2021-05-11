@@ -49,14 +49,20 @@ namespace reactive
     public:
         virtual ~PyNode();
 
+        void Init(const std::string& serializedFunction, const PyFunctionSignature& signature, const PyNodeEdgesMetaData& meta);
         void Init(PyObject* pyFunction, const PyFunctionSignature& signature, const PyNodeEdgesMetaData& meta);
         void PostStop() override;
         void PostInvoke() override;
         void Invoke() override;
 
     private:
+        void _Init(const PyFunctionSignature& signature, const PyNodeEdgesMetaData& meta);
+
+    private:
         sweetPy::ObjectPtr m_pyFunction;
         sweetPy::Tuple m_arguments;
+        std::unique_ptr<std::string> m_serializedFunction;
+        bool m_concurrent;
     };
 
     class PyNodeFactory

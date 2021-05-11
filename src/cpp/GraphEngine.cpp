@@ -18,7 +18,7 @@ namespace reactive
         Stop();
     }
 
-    GraphEngine::GraphEngine(): m_cycleDuration(2), m_isStarted(false)
+    GraphEngine::GraphEngine(): m_cycleDuration(2), m_isStarted(false), m_tasksOrchestrator(true)
     {
     }
 
@@ -139,6 +139,12 @@ namespace reactive
         m_isStopped = false;
         std::this_thread::sleep_for(endTime.get_duration());
         Stop();
+    }
+
+    void GraphEngine::InvokeConcurrentFunction(const std::string& function)
+    {
+        ConcurrentOrchestrator::PointerType concurrentTask(MakeConcurrentFunction<ConcurrentOrchestrator::TASK_SIZE>(function));
+        m_tasksOrchestrator.Dispatch(std::move(*concurrentTask));
     }
 
     void GraphEngine::EventLoop()
